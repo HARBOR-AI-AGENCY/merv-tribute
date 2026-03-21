@@ -4,6 +4,8 @@ const SUPABASE_URL = "https://eopwxchguerhvlpevbxo.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcHd4Y2hndWVyaHZscGV2YnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwOTkzNjQsImV4cCI6MjA4OTY3NTM2NH0.JcaFxQALMiJymMrWBclr8bVLU8_uS9dph8j_GAZ6yps";
 
 async function supabaseInsert(table, data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
       apikey: SUPABASE_ANON_KEY,
@@ -16,11 +18,12 @@ async function supabaseInsert(table, data) {
 }
 
 const GOOGLE_DRIVE_LINK = "https://drive.google.com/drive/folders/1txT1_N55dFO3BwTzddk_p02jWqlh9z-j?usp=drive_link";
+const ADMIN_PASSWORD = "mervorocks";
 
 const ARTWORKS = [
   { title: "Willie Nelson", medium: "Drawing", img: "https://i.pinimg.com/736x/fa/12/78/fa12780cb9808d77b3dd6a21b7275ade.jpg", link: "https://www.pinterest.com/pin/britishcanadian-artist-merv-scoble-httpswwwfacebookcommervscoblereftsfrefts--187180928240206725", note: "Expressive portraiture - one of hundreds of drawings Merv created across five decades." },
-  { title: "Darryl Sittler - Toronto Maple Leafs", medium: "Lithograph, numbered & signed - 43/500", img: "https://artisticafineart.com/cdn/shop/files/A435-Darryl-Sittler-Toronto-Maple-Leafs-by-Mervyn-Scoble.jpg?v=1736386449&width=600", link: "https://artisticafineart.com/products/darryl-sittler-toronto-maple-leafs-by-mervyn-scoble-lithograph", note: "Co-signed by Darryl Sittler himself. One of Merv's landmark Canadian sports commissions." },
   { title: "Jimi Hendrix", medium: "Acrylic on canvas", img: "/merv_hendrix.jpg", link: "https://www.facebook.com/merv.scoble", note: "One of Merv's rock icon portraits - vibrant acrylic work capturing Hendrix mid-performance." },
+  { title: "Darryl Sittler - Toronto Maple Leafs", medium: "Lithograph, numbered & signed - 43/500", img: "https://artisticafineart.com/cdn/shop/files/A435-Darryl-Sittler-Toronto-Maple-Leafs-by-Mervyn-Scoble.jpg?v=1736386449&width=600", link: "https://artisticafineart.com/products/darryl-sittler-toronto-maple-leafs-by-mervyn-scoble-lithograph", note: "Co-signed by Darryl Sittler himself. One of Merv's landmark Canadian sports commissions." },
   { title: "Chinatown", medium: "Lithograph, numbered & signed - 302/500", img: "https://artisticafineart.com/cdn/shop/files/A106-Chinatown-by-Mervyn-Scoble.jpg?v=1736389021&width=600", link: "https://artisticafineart.com/products/chinatown-by-mervyn-scoble-lithograph", note: "Part of Merv's series documenting Toronto's distinctive neighbourhoods." },
   { title: "Le Vieux Montreal", medium: "Lithograph, numbered & signed - 06/200", img: "https://artisticafineart.com/cdn/shop/files/SIG578-Le-Vieux-Montreal-by-Mervyn-Scoble.jpg?v=1736379063&width=600", link: "https://artisticafineart.com/products/le-vieux-montreal-lithography-numbered-signed-06-200", note: "Merv's eye for architectural character shines in this Old Montreal scene." },
   { title: "Notre Dame de Bonsecours - Montreal", medium: "Lithograph, numbered & signed - 25/200", img: "https://artisticafineart.com/cdn/shop/products/artistica_fine_art_sig577.jpg?v=1736379243&width=600", link: "https://artisticafineart.com/products/notre-dame-de-bonsecours-lithography-numbered-signed-25-200", note: "Architectural study of one of Montreal's most beloved historic chapels." },
@@ -31,11 +34,6 @@ const ART_LINKS = [
   { label: "Artsy - Mervyn Scoble", url: "https://www.artsy.net/artist/mervyn-scoble", note: "International art platform profile" },
   { label: "Heffel Fine Art", url: "https://www.heffel.com/Artist/585F5D5B/Mervyn%20Scoble/", note: "Canada's leading fine art auction house" },
   { label: "Facebook - Merv Scoble Art", url: "https://www.facebook.com/merv.scoble", note: "Merv's own Facebook art page" },
-];
-
-const SAMPLE_MEMORIES = [
-  { name: "Jon Gibbes", rel: "TUFC Club Historian", text: "Mervo set up a Torquay United forum in 1997 from Canada that brought fans together from around the world. It became the official club forum - until the club tied itself into a deal with a generic provider, while all the traffic stayed with Mervo's site. Classic Mervo." },
-  { name: "Sarah Scoble", rel: "Daughter", text: "He asked hard questions, challenged easy answers, and never missed a chance to stir things up if it meant making people think, laugh, or fight back. Life with Merv was rarely quiet, never dull, and always interesting." },
 ];
 
 const styles = `
@@ -59,19 +57,15 @@ const styles = `
   .hero { min-height: 100vh; display: grid; grid-template-rows: 1fr auto; position: relative; overflow: hidden; background: #1b2b1c; }
   .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 15% 15%, rgba(182,144,58,0.18) 0%, transparent 55%), linear-gradient(170deg, #1e2f1f 0%, #253426 45%, #192019 100%); }
   .hero-inner { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 6rem 2rem 3rem; position: relative; z-index: 1; }
-
   .hero-pill { display: inline-flex; align-items: center; gap: 0.7rem; background: rgba(182,144,58,0.1); border: 1px solid rgba(182,144,58,0.28); border-radius: 100px; padding: 0.38rem 1.2rem; margin-bottom: 2.5rem; animation: fadeUp 0.9s ease both; }
   .hero-pill span { font-size: 0.68rem; letter-spacing: 0.32em; text-transform: uppercase; color: var(--gold-light); font-weight: 300; }
   .hero-pill-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--gold); opacity: 0.55; }
-
   .hero-name { font-family: 'Cormorant Garamond', serif; font-size: clamp(3.8rem, 11vw, 8rem); font-weight: 300; color: var(--cream); line-height: 0.95; animation: fadeUp 0.9s 0.12s ease both; margin-bottom: 0.6rem; }
   .hero-name em { font-style: italic; color: var(--gold-light); }
   .hero-aka { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: clamp(1.1rem, 2.5vw, 1.6rem); color: rgba(210,171,99,0.6); animation: fadeUp 0.9s 0.22s ease both; margin-bottom: 2.6rem; letter-spacing: 0.06em; }
-
   .hero-divider { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 2.6rem; animation: fadeUp 0.9s 0.3s ease both; }
   .hdl { width: 48px; height: 1px; background: rgba(182,144,58,0.38); }
   .hdd { width: 5px; height: 5px; background: var(--gold); transform: rotate(45deg); opacity: 0.55; }
-
   .hero-event { animation: fadeUp 0.9s 0.4s ease both; color: rgba(245,240,230,0.6); font-size: 0.92rem; letter-spacing: 0.07em; line-height: 2.2; font-weight: 300; }
   .hero-event strong { color: var(--cream); font-weight: 400; display: block; font-size: 1.08rem; margin-bottom: 0.15rem; }
   .hero-foot { position: relative; z-index: 1; border-top: 1px solid rgba(255,255,255,0.05); padding: 1.4rem 2rem; display: flex; align-items: center; justify-content: center; gap: 0.6rem; animation: fadeUp 0.9s 0.75s ease both; }
@@ -172,6 +166,23 @@ const styles = `
   .footer-link { color: rgba(210,171,99,0.5); text-decoration: none; font-size: 0.75rem; letter-spacing: 0.1em; transition: color 0.2s; }
   .footer-link:hover { color: var(--gold-light); }
 
+  .admin-wrap { max-width: 900px; margin: 0 auto; padding: 3rem 2rem; font-family: 'Jost', sans-serif; }
+  .admin-title { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; color: var(--forest); margin-bottom: 0.4rem; font-weight: 300; }
+  .admin-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 3rem; }
+  .admin-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 3rem; }
+  .admin-stat { padding: 1.5rem; border-radius: 2px; text-align: center; }
+  .admin-stat-num { font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 300; display: block; }
+  .admin-stat-label { font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.75; }
+  .admin-section-title { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--forest); margin-bottom: 1rem; font-weight: 300; }
+  .admin-row { background: var(--white); border: 1px solid var(--border); padding: 1.2rem 1.4rem; border-radius: 2px; margin-bottom: 0.75rem; }
+  .admin-row-msg { font-style: italic; font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--charcoal); margin-bottom: 0.5rem; }
+  .admin-row-meta { font-size: 0.75rem; color: var(--muted); display: flex; gap: 1rem; flex-wrap: wrap; }
+  .admin-row-meta strong { color: var(--charcoal); }
+  .admin-song-title { font-size: 1rem; font-weight: 400; color: var(--forest); margin-bottom: 0.3rem; }
+  .admin-song-artist { color: var(--gold); }
+  .admin-song-note { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-bottom: 0.3rem; }
+  .admin-empty { color: var(--muted); font-size: 0.9rem; padding: 1rem 0; }
+
   @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
 
@@ -181,11 +192,14 @@ const styles = `
     .drive-card { flex-direction: column; gap: 1rem; }
     .nav-links { display: none; }
     .gallery-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .admin-stats { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 420px) { .gallery-grid { grid-template-columns: 1fr; } }
 `;
 
 export default function App() {
+  const isAdmin = window.location.pathname === '/admin';
+
   const [navVisible, setNavVisible] = useState(false);
   const [activeTab, setActiveTab] = useState("memory");
   const [memoryForm, setMemoryForm] = useState({ name: "", relationship: "", message: "" });
@@ -194,21 +208,30 @@ export default function App() {
   const [songState, setSongState] = useState("idle");
   const [memories, setMemories] = useState([]);
 
-    useEffect(() => {
-      fetch(`${SUPABASE_URL}/rest/v1/memories?select=name,relationship,message&order=created_at.desc`, {
-        headers: {
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-        }
-      })
-      .then(r => r.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setMemories(data.map(m => ({ name: m.name, rel: m.relationship, text: m.message })));
-        }
-      })
-      .catch(err => console.error("Fetch error:", err));
-    }, []);
+  const [adminAuth, setAdminAuth] = useState(false);
+  const [adminPass, setAdminPass] = useState('');
+  const [adminMemories, setAdminMemories] = useState([]);
+  const [adminSongs, setAdminSongs] = useState([]);
+
+  useEffect(() => {
+    fetch(`${SUPABASE_URL}/rest/v1/memories?select=name,relationship,message&order=created_at.desc`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+    })
+    .then(r => r.json())
+    .then(data => { if (Array.isArray(data)) setMemories(data.map(m => ({ name: m.name, rel: m.relationship, text: m.message }))); })
+    .catch(err => console.error("Fetch error:", err));
+  }, []);
+
+  useEffect(() => {
+    if (!adminAuth) return;
+    fetch(`${SUPABASE_URL}/rest/v1/memories?select=*&order=created_at.desc`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+    }).then(r => r.json()).then(data => { if (Array.isArray(data)) setAdminMemories(data); });
+
+    fetch(`${SUPABASE_URL}/rest/v1/song_requests?select=*&order=created_at.desc`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+    }).then(r => r.json()).then(data => { if (Array.isArray(data)) setAdminSongs(data); });
+  }, [adminAuth]);
 
   const submitMemory = async () => {
     if (!memoryForm.message.trim()) return;
@@ -230,6 +253,83 @@ export default function App() {
       setSongState("success");
     } catch { setSongState("error"); }
   };
+
+  const checkPassword = () => {
+    if (adminPass === ADMIN_PASSWORD) setAdminAuth(true);
+    else alert('Incorrect password');
+  };
+
+  if (isAdmin && !adminAuth) {
+    return (
+      <>
+        <style>{styles}</style>
+        <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--forest)'}}>
+          <div style={{background:'white',padding:'2.5rem',borderRadius:'2px',width:'320px',textAlign:'center',boxShadow:'0 8px 40px rgba(0,0,0,0.2)'}}>
+            <div style={{fontFamily:'Cormorant Garamond, serif',fontSize:'1.8rem',color:'var(--forest)',marginBottom:'0.3rem'}}>Admin Access</div>
+            <div style={{fontSize:'0.8rem',color:'var(--muted)',marginBottom:'1.5rem',letterSpacing:'0.1em'}}>Mervyn Scoble Tribute</div>
+            <input type="password" placeholder="Password" value={adminPass}
+              onChange={e => setAdminPass(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') checkPassword(); }}
+              style={{width:'100%',padding:'0.8rem',border:'1px solid var(--border)',marginBottom:'1rem',fontFamily:'Jost,sans-serif',borderRadius:'1px',outline:'none'}} />
+            <button className="btn" style={{width:'100%',justifyContent:'center'}} onClick={checkPassword}>Enter</button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (isAdmin && adminAuth) {
+    return (
+      <>
+        <style>{styles}</style>
+        <div style={{background:'var(--forest)',padding:'1rem 2rem',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{fontFamily:'Cormorant Garamond,serif',color:'var(--gold-light)',fontSize:'1.1rem',fontStyle:'italic'}}>Mervyn Scoble - Admin</div>
+          <a href="/" style={{color:'rgba(245,240,230,0.5)',fontSize:'0.72rem',letterSpacing:'0.2em',textTransform:'uppercase',textDecoration:'none'}}>Back to site</a>
+        </div>
+        <div className="admin-wrap">
+          <div className="admin-title">Dashboard</div>
+          <div className="admin-sub">mervo.harborai.ca - All submissions</div>
+
+          <div className="admin-stats">
+            <div className="admin-stat" style={{background:'var(--forest)',color:'var(--cream)'}}>
+              <span className="admin-stat-num">{adminMemories.length}</span>
+              <span className="admin-stat-label">Memories</span>
+            </div>
+            <div className="admin-stat" style={{background:'var(--gold)',color:'white'}}>
+              <span className="admin-stat-num">{adminSongs.length}</span>
+              <span className="admin-stat-label">Song Requests</span>
+            </div>
+          </div>
+
+          <div className="admin-section-title">Memories</div>
+          {adminMemories.length === 0 && <div className="admin-empty">No memories submitted yet.</div>}
+          {adminMemories.map((m,i) => (
+            <div className="admin-row" key={i}>
+              <div className="admin-row-msg">{m.message}</div>
+              <div className="admin-row-meta">
+                <span><strong>{m.name}</strong></span>
+                {m.relationship && <span>- {m.relationship}</span>}
+                <span>{new Date(m.created_at).toLocaleDateString('en-CA', {year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
+              </div>
+            </div>
+          ))}
+
+          <div className="admin-section-title" style={{marginTop:'3rem'}}>Song Requests</div>
+          {adminSongs.length === 0 && <div className="admin-empty">No song requests yet.</div>}
+          {adminSongs.map((s,i) => (
+            <div className="admin-row" key={i}>
+              <div className="admin-song-title">{s.song_title}{s.artist && <span className="admin-song-artist"> - {s.artist}</span>}</div>
+              {s.note && <div className="admin-song-note">{s.note}</div>}
+              <div className="admin-row-meta">
+                <span><strong>{s.submitted_by}</strong></span>
+                <span>{new Date(s.created_at).toLocaleDateString('en-CA', {year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -315,6 +415,7 @@ export default function App() {
           </div>
           <div className="find-more">
             <h3>Hundreds more works across the web</h3>
+            <p>Merv's limited edition lithographs are available through Artistica Fine Art, and his work appears on Artsy, Heffel, and collectors' sites worldwide. Visit his Facebook page for personal works and rock icon portraits.</p>
             <div className="art-links">
               {ART_LINKS.map((l, i) => (
                 <a key={i} className="art-link-card" href={l.url} target="_blank" rel="noopener noreferrer">
@@ -368,7 +469,7 @@ export default function App() {
                 {memState==="success" && <div className="success-msg">Your memory has been added. Thank you.</div>}
                 {memState==="error" && <div className="error-msg">Something went wrong. Please try again or contact Devon at 647-291-3386.</div>}
               </div>
-              {memories.length>0 && (
+              {memories.length > 0 && (
                 <div>
                   <div className="section-eyebrow" style={{marginTop:"2.5rem",marginBottom:"1rem"}}>Memories shared</div>
                   <div className="memories-wall">
