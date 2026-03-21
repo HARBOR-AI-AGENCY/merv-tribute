@@ -192,7 +192,7 @@ export default function App() {
   const [songForm, setSongForm] = useState({ name: "", song: "", artist: "", note: "" });
   const [memState, setMemState] = useState("idle");
   const [songState, setSongState] = useState("idle");
- const [memories, setMemories] = useState([]);
+ const [memories, setMemories] = useState([{name:"Test", rel:"Test", text:"If you can see this the wall works"}]);
 
 useEffect(() => {
   fetch(`${SUPABASE_URL}/rest/v1/memories?select=name,relationship,message&order=created_at.desc`, {
