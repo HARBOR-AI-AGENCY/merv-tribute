@@ -192,11 +192,7 @@ export default function App() {
   const [songForm, setSongForm] = useState({ name: "", song: "", artist: "", note: "" });
   const [memState, setMemState] = useState("idle");
   const [songState, setSongState] = useState("idle");
-  const [memories, setMemories] = useState([]);
-
-useEffect(() => {
-  
-const [memoriesLoading, setMemoriesLoading] = useState(true);
+ const [memories, setMemories] = useState([]);
 
 useEffect(() => {
   fetch(`${SUPABASE_URL}/rest/v1/memories?select=name,relationship,message&order=created_at.desc`, {
@@ -207,30 +203,11 @@ useEffect(() => {
   })
   .then(r => r.json())
   .then(data => {
-    if (Array.isArray(data) && data.length > 0) {
-      seuseEffect(() => {
-  fetch(`${SUPABASE_URL}/rest/v1/memories?select=name,relationship,message&order=created_at.desc`, {
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-    }
-  })
-  .then(r => {
-    console.log("Status:", r.status);
-    return r.json();
-  })
-  .then(data => {
-    console.log("Data:", data);
     if (Array.isArray(data)) {
       setMemories(data.map(m => ({ name: m.name, rel: m.relationship, text: m.message })));
     }
   })
   .catch(err => console.error("Fetch error:", err));
-}, []);tMemories(data.map(m => ({ name: m.name, rel: m.relationship, text: m.message })));
-    }
-    setMemoriesLoading(false);
-  })
-  .catch(() => setMemoriesLoading(false));
 }, []);
 
   const submitMemory = async () => {
