@@ -194,7 +194,23 @@ export default function App() {
   const [songForm, setSongForm] = useState({ name: "", song: "", artist: "", note: "" });
   const [memState, setMemState] = useState("idle");
   const [songState, setSongState] = useState("idle");
-  const [memories, setMemories] = useState(SAMPLE_MEMORIES);
+  const [memories, setMemories] = useState([]);
+
+useEffect(() => {
+  fetch(`${SUPABASE_URL}/rest/v1/memories?select=name,relationship,message&order=created_at.desc`, {
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+    }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (Array.isArray(data)) {
+      setMemories(data.map(m => ({ name: m.name, rel: m.relationship, text: m.message })));
+    }
+  })
+  .catch(err => console.error(err));
+}, []);
 const [memoriesLoading, setMemoriesLoading] = useState(true);
 
 useEffect(() => {
