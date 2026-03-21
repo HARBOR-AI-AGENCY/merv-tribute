@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const SUPABASE_URL = "https://eopwxchguerhvlpevbxo.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcHd4Y2hndWVyaHZscGV2YnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwOTkzNjQsImV4cCI6MjA4OTY3NTM2NH0.JcaFxQALMiJymMrWBclr8bVLU8_uS9dph8j_GAZ6yps";
@@ -195,6 +195,24 @@ export default function App() {
   const [memState, setMemState] = useState("idle");
   const [songState, setSongState] = useState("idle");
   const [memories, setMemories] = useState(SAMPLE_MEMORIES);
+const [memoriesLoading, setMemoriesLoading] = useState(true);
+
+useEffect(() => {
+  fetch(`${SUPABASE_URL}/rest/v1/memories?select=name,relationship,message&order=created_at.desc`, {
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+    }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (Array.isArray(data) && data.length > 0) {
+      setMemories(data.map(m => ({ name: m.name, rel: m.relationship, text: m.message })));
+    }
+    setMemoriesLoading(false);
+  })
+  .catch(() => setMemoriesLoading(false));
+}, []);
 
   const submitMemory = async () => {
     if (!memoryForm.message.trim()) return;
