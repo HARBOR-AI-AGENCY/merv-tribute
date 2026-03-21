@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 
 const SUPABASE_URL = "https://eopwxchguerhvlpevbxo.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcHd4Y2hndWVyaHZscGV2YnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwOTkzNjQsImV4cCI6MjA4OTY3NTM2NH0.JcaFxQALMiJymMrWBclr8bVLU8_uS9dph8j_GAZ6yps";
+const ADMIN_PASSWORD = "mervorocks";
+const GOOGLE_DRIVE_LINK = "https://drive.google.com/drive/folders/1txT1_N55dFO3BwTzddk_p02jWqlh9z-j?usp=drive_link";
 
 async function supabaseInsert(table, data) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
@@ -16,9 +18,6 @@ async function supabaseInsert(table, data) {
   });
   if (!res.ok) throw new Error("Submission failed");
 }
-
-const GOOGLE_DRIVE_LINK = "https://drive.google.com/drive/folders/1txT1_N55dFO3BwTzddk_p02jWqlh9z-j?usp=drive_link";
-const ADMIN_PASSWORD = "mervorocks";
 
 const ARTWORKS = [
   { title: "Willie Nelson", medium: "Drawing", img: "https://i.pinimg.com/736x/fa/12/78/fa12780cb9808d77b3dd6a21b7275ade.jpg", link: "https://www.pinterest.com/pin/britishcanadian-artist-merv-scoble-httpswwwfacebookcommervscoblereftsfrefts--187180928240206725", note: "Expressive portraiture - one of hundreds of drawings Merv created across five decades." },
@@ -46,14 +45,12 @@ const styles = `
   }
   html { scroll-behavior: smooth; }
   body { background: var(--cream); font-family: 'Jost', sans-serif; font-weight: 300; color: var(--charcoal); line-height: 1.7; }
-
   .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: 52px; background: rgba(37,52,38,0.96); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; transform: translateY(-100%); transition: transform 0.35s ease; border-bottom: 1px solid rgba(182,144,58,0.15); }
   .nav.show { transform: translateY(0); }
   .nav-name { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.1rem; color: var(--gold-light); }
   .nav-links { display: flex; gap: 1.8rem; }
   .nav-links a { color: rgba(245,240,230,0.5); text-decoration: none; font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; transition: color 0.2s; }
   .nav-links a:hover { color: var(--gold-light); }
-
   .hero { min-height: 100vh; display: grid; grid-template-rows: 1fr auto; position: relative; overflow: hidden; background: #1b2b1c; }
   .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 15% 15%, rgba(182,144,58,0.18) 0%, transparent 55%), linear-gradient(170deg, #1e2f1f 0%, #253426 45%, #192019 100%); }
   .hero-inner { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 6rem 2rem 3rem; position: relative; z-index: 1; }
@@ -71,7 +68,6 @@ const styles = `
   .hero-foot { position: relative; z-index: 1; border-top: 1px solid rgba(255,255,255,0.05); padding: 1.4rem 2rem; display: flex; align-items: center; justify-content: center; gap: 0.6rem; animation: fadeUp 0.9s 0.75s ease both; }
   .hero-foot-txt { font-size: 0.67rem; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(245,240,230,0.28); }
   .bounce { color: rgba(182,144,58,0.45); animation: bounce 2.2s infinite; font-size: 0.85rem; }
-
   .about { background: var(--forest); position: relative; }
   .about-inner { max-width: 960px; margin: 0 auto; padding: 6rem 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
   .about-quote { position: relative; padding: 1.5rem 0; }
@@ -86,23 +82,19 @@ const styles = `
   .tag { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; border: 1px solid rgba(182,144,58,0.3); color: var(--gold-light); padding: 0.3rem 0.8rem; border-radius: 100px; }
   .tufc-link { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--gold-light); text-decoration: none; font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; border-bottom: 1px solid rgba(210,171,99,0.3); padding-bottom: 0.1rem; transition: color 0.2s; }
   .tufc-link:hover { color: var(--gold); }
-
   .section { max-width: 860px; margin: 0 auto; padding: 5rem 2rem; }
   .section-eyebrow { font-size: 0.68rem; letter-spacing: 0.38em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.75rem; }
   .section-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 5vw, 3rem); font-weight: 300; line-height: 1.12; color: var(--forest); margin-bottom: 1.2rem; }
   .section-title em { font-style: italic; color: var(--gold); }
   .section-body { color: var(--muted); font-size: 0.98rem; line-height: 1.88; margin-bottom: 1.5rem; }
   .section-body strong { color: var(--charcoal); font-weight: 400; }
-
   .divider { display: flex; align-items: center; gap: 1.2rem; margin: 0 auto; max-width: 860px; padding: 0 2rem; opacity: 0.32; }
   .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
   .divider-d { width: 5px; height: 5px; background: var(--gold); transform: rotate(45deg); }
-
   .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px,1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 2.5rem; border-radius: 2px; overflow: hidden; }
   .info-cell { background: var(--white); padding: 1.4rem 1.5rem; }
   .info-label { font-size: 0.65rem; letter-spacing: 0.26em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.4rem; }
   .info-val { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--forest); line-height: 1.45; }
-
   .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
   .art-card { background: var(--white); border: 1px solid var(--border); border-radius: 2px; overflow: hidden; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: transform 0.25s ease, box-shadow 0.25s ease; box-shadow: 0 2px 12px rgba(37,52,38,0.06); }
   .art-card:hover { transform: translateY(-4px); box-shadow: 0 10px 36px rgba(37,52,38,0.13); }
@@ -116,83 +108,75 @@ const styles = `
   .art-title { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 400; color: var(--forest); line-height: 1.3; }
   .art-medium { font-size: 0.7rem; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; }
   .art-note { font-size: 0.83rem; color: var(--muted); line-height: 1.6; margin-top: 0.4rem; }
-
   .art-links { display: grid; gap: 0.75rem; margin-bottom: 2.5rem; }
   .art-link-card { display: flex; align-items: flex-start; gap: 1rem; background: var(--white); border: 1px solid var(--border); border-radius: 2px; padding: 1.2rem 1.4rem; text-decoration: none; color: inherit; transition: border-color 0.2s; }
   .art-link-card:hover { border-color: var(--gold); }
   .art-link-dot { flex-shrink: 0; width: 8px; height: 8px; background: var(--gold); border-radius: 50%; margin-top: 0.45rem; opacity: 0.7; }
   .art-link-label { font-size: 0.9rem; font-weight: 400; color: var(--forest); margin-bottom: 0.2rem; }
   .art-link-note { font-size: 0.82rem; color: var(--muted); }
-
   .find-more { background: var(--parchment); border: 1px solid var(--border); border-radius: 2px; padding: 2rem; margin-bottom: 1rem; }
   .find-more h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 400; color: var(--forest); margin-bottom: 0.6rem; }
   .find-more p { font-size: 0.9rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.2rem; }
-
   .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 2rem; overflow-x: auto; }
   .tab { flex-shrink: 0; padding: 0.82rem 1.6rem; background: none; border: none; border-bottom: 2px solid transparent; font-family: 'Jost', sans-serif; font-size: 0.73rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); cursor: pointer; transition: all 0.2s; margin-bottom: -1px; font-weight: 300; }
   .tab.active { color: var(--forest); border-bottom-color: var(--gold); font-weight: 400; }
   .tab:hover:not(.active) { color: var(--charcoal); }
-
   .card { background: var(--white); border: 1px solid var(--border); border-radius: 2px; padding: 2.5rem; box-shadow: 0 1px 14px rgba(37,52,38,0.05); }
   .form-group { margin-bottom: 1.4rem; }
   label { display: block; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; font-weight: 400; }
   input, textarea { width: 100%; padding: 0.82rem 1rem; border: 1px solid var(--border); background: var(--cream); font-family: 'Jost', sans-serif; font-weight: 300; font-size: 0.98rem; color: var(--charcoal); border-radius: 1px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
   input:focus, textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(182,144,58,0.1); background: var(--white); }
   textarea { resize: vertical; min-height: 120px; line-height: 1.7; }
-
   .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.85rem 2.1rem; background: var(--forest); color: var(--cream); border: none; font-family: 'Jost', sans-serif; font-size: 0.73rem; font-weight: 400; letter-spacing: 0.22em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; border-radius: 1px; }
   .btn:hover { background: var(--forest-mid); }
   .btn:disabled { opacity: 0.42; cursor: not-allowed; }
-
   .success-msg { display: flex; align-items: center; gap: 0.7rem; padding: 1.1rem 1.4rem; background: rgba(37,52,38,0.06); border-left: 3px solid var(--forest); font-size: 0.9rem; color: var(--forest); margin-top: 1rem; }
   .error-msg { padding: 1rem 1.2rem; background: rgba(180,60,60,0.07); border-left: 3px solid #b43c3c; font-size: 0.86rem; color: #8b2020; margin-top: 1rem; }
-
   .memories-wall { display: grid; gap: 1rem; margin-top: 2.2rem; }
   .memory-card { background: var(--white); border: 1px solid var(--border); padding: 1.6rem; border-radius: 2px; }
   .memory-text { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.13rem; line-height: 1.72; color: var(--charcoal); margin-bottom: 0.75rem; }
   .memory-meta { display: flex; align-items: center; gap: 0.7rem; }
   .memory-author { font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
   .memory-rel { font-size: 0.7rem; color: var(--gold); }
-
   .drive-card { border: 1px solid var(--border); border-radius: 2px; padding: 2rem; display: flex; align-items: flex-start; gap: 1.5rem; background: var(--parchment); text-decoration: none; color: inherit; transition: box-shadow 0.25s; }
   .drive-card:hover { box-shadow: 0 6px 28px rgba(37,52,38,0.12); }
   .drive-icon { flex-shrink: 0; width: 48px; height: 48px; background: var(--forest); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--gold-light); font-size: 1.3rem; }
   .drive-text h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 400; color: var(--forest); margin-bottom: 0.3rem; }
   .drive-text p { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
-
   .footer { background: var(--forest); color: rgba(245,240,230,0.42); text-align: center; padding: 4.5rem 2rem 3rem; font-size: 0.88rem; line-height: 2.2; }
   .footer-name { font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--gold-light); font-size: 1.7rem; display: block; margin-bottom: 0.4rem; font-weight: 300; }
   .footer-links { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.5rem; margin-top: 1.5rem; }
   .footer-link { color: rgba(210,171,99,0.5); text-decoration: none; font-size: 0.75rem; letter-spacing: 0.1em; transition: color 0.2s; }
   .footer-link:hover { color: var(--gold-light); }
-
-  .admin-wrap { max-width: 900px; margin: 0 auto; padding: 3rem 2rem; font-family: 'Jost', sans-serif; }
+  .admin-wrap { max-width: 900px; margin: 0 auto; padding: 3rem 2rem; }
   .admin-title { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; color: var(--forest); margin-bottom: 0.4rem; font-weight: 300; }
   .admin-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 3rem; }
-  .admin-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 3rem; }
-  .admin-stat { padding: 1.5rem; border-radius: 2px; text-align: center; }
+  .admin-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+  .admin-stat { padding: 1.5rem; border-radius: 2px; text-align: center; cursor: pointer; transition: opacity 0.2s; user-select: none; }
+  .admin-stat:hover { opacity: 0.85; }
   .admin-stat-num { font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 300; display: block; }
-  .admin-stat-label { font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.75; }
-  .admin-section-title { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--forest); margin-bottom: 1rem; font-weight: 300; }
-  .admin-row { background: var(--white); border: 1px solid var(--border); padding: 1.2rem 1.4rem; border-radius: 2px; margin-bottom: 0.75rem; }
+  .admin-stat-label { font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.75; display: block; margin-top: 0.3rem; }
+  .admin-panel { border: 1px solid var(--border); border-radius: 2px; margin-bottom: 2rem; overflow: hidden; }
+  .admin-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 1.5rem; background: var(--parchment); border-bottom: 1px solid var(--border); }
+  .admin-panel-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--forest); font-weight: 300; }
+  .admin-panel-body { padding: 1.5rem; background: var(--white); }
+  .admin-row { border: 1px solid var(--border); padding: 1.2rem 1.4rem; border-radius: 2px; margin-bottom: 0.75rem; background: var(--cream); }
+  .admin-row:last-child { margin-bottom: 0; }
   .admin-row-msg { font-style: italic; font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--charcoal); margin-bottom: 0.5rem; }
   .admin-row-meta { font-size: 0.75rem; color: var(--muted); display: flex; gap: 1rem; flex-wrap: wrap; }
   .admin-row-meta strong { color: var(--charcoal); }
   .admin-song-title { font-size: 1rem; font-weight: 400; color: var(--forest); margin-bottom: 0.3rem; }
   .admin-song-artist { color: var(--gold); }
   .admin-song-note { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-bottom: 0.3rem; }
-  .admin-empty { color: var(--muted); font-size: 0.9rem; padding: 1rem 0; }
-
+  .admin-empty { color: var(--muted); font-size: 0.9rem; padding: 0.5rem 0; }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
-
   @media (max-width: 700px) {
     .about-inner { grid-template-columns: 1fr; gap: 2.5rem; }
     .card { padding: 1.5rem; }
     .drive-card { flex-direction: column; gap: 1rem; }
     .nav-links { display: none; }
     .gallery-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .admin-stats { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 420px) { .gallery-grid { grid-template-columns: 1fr; } }
 `;
@@ -207,11 +191,11 @@ export default function App() {
   const [memState, setMemState] = useState("idle");
   const [songState, setSongState] = useState("idle");
   const [memories, setMemories] = useState([]);
-
   const [adminAuth, setAdminAuth] = useState(false);
   const [adminPass, setAdminPass] = useState('');
   const [adminMemories, setAdminMemories] = useState([]);
   const [adminSongs, setAdminSongs] = useState([]);
+  const [adminTab, setAdminTab] = useState(null);
 
   useEffect(() => {
     fetch(`${SUPABASE_URL}/rest/v1/memories?select=name,relationship,message&order=created_at.desc`, {
@@ -227,7 +211,6 @@ export default function App() {
     fetch(`${SUPABASE_URL}/rest/v1/memories?select=*&order=created_at.desc`, {
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
     }).then(r => r.json()).then(data => { if (Array.isArray(data)) setAdminMemories(data); });
-
     fetch(`${SUPABASE_URL}/rest/v1/song_requests?select=*&order=created_at.desc`, {
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
     }).then(r => r.json()).then(data => { if (Array.isArray(data)) setAdminSongs(data); });
@@ -254,6 +237,17 @@ export default function App() {
     } catch { setSongState("error"); }
   };
 
+  const downloadCSV = () => {
+    const csv = [
+      'Song,Artist,Note,Submitted By,Date',
+      ...adminSongs.map(s => `"${s.song_title}","${s.artist||''}","${s.note||''}","${s.submitted_by}","${new Date(s.created_at).toLocaleDateString('en-CA')}"`)
+    ].join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'merv-song-requests.csv';
+    a.click();
+  };
+
   const checkPassword = () => {
     if (adminPass === ADMIN_PASSWORD) setAdminAuth(true);
     else alert('Incorrect password');
@@ -265,7 +259,7 @@ export default function App() {
         <style>{styles}</style>
         <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--forest)'}}>
           <div style={{background:'white',padding:'2.5rem',borderRadius:'2px',width:'320px',textAlign:'center',boxShadow:'0 8px 40px rgba(0,0,0,0.2)'}}>
-            <div style={{fontFamily:'Cormorant Garamond, serif',fontSize:'1.8rem',color:'var(--forest)',marginBottom:'0.3rem'}}>Admin Access</div>
+            <div style={{fontFamily:'Cormorant Garamond,serif',fontSize:'1.8rem',color:'var(--forest)',marginBottom:'0.3rem'}}>Admin Access</div>
             <div style={{fontSize:'0.8rem',color:'var(--muted)',marginBottom:'1.5rem',letterSpacing:'0.1em'}}>Mervyn Scoble Tribute</div>
             <input type="password" placeholder="Password" value={adminPass}
               onChange={e => setAdminPass(e.target.value)}
@@ -282,7 +276,7 @@ export default function App() {
     return (
       <>
         <style>{styles}</style>
-        <div style={{background:'var(--forest)',padding:'1rem 2rem',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <div style={{background:'var(--forest)',padding:'1rem 2rem',display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:100}}>
           <div style={{fontFamily:'Cormorant Garamond,serif',color:'var(--gold-light)',fontSize:'1.1rem',fontStyle:'italic'}}>Mervyn Scoble - Admin</div>
           <a href="/" style={{color:'rgba(245,240,230,0.5)',fontSize:'0.72rem',letterSpacing:'0.2em',textTransform:'uppercase',textDecoration:'none'}}>Back to site</a>
         </div>
@@ -291,41 +285,62 @@ export default function App() {
           <div className="admin-sub">mervo.harborai.ca - All submissions</div>
 
           <div className="admin-stats">
-            <div className="admin-stat" style={{background:'var(--forest)',color:'var(--cream)'}}>
+            <div className="admin-stat"
+              style={{background:'var(--forest)',color:'var(--cream)'}}
+              onClick={() => setAdminTab(adminTab === 'memories' ? null : 'memories')}>
               <span className="admin-stat-num">{adminMemories.length}</span>
-              <span className="admin-stat-label">Memories</span>
+              <span className="admin-stat-label">Memories - {adminTab==='memories' ? 'click to close' : 'click to view'}</span>
             </div>
-            <div className="admin-stat" style={{background:'var(--gold)',color:'white'}}>
+            <div className="admin-stat"
+              style={{background:'var(--gold)',color:'white'}}
+              onClick={() => setAdminTab(adminTab === 'songs' ? null : 'songs')}>
               <span className="admin-stat-num">{adminSongs.length}</span>
-              <span className="admin-stat-label">Song Requests</span>
+              <span className="admin-stat-label">Song Requests - {adminTab==='songs' ? 'click to close' : 'click to view'}</span>
             </div>
           </div>
 
-          <div className="admin-section-title">Memories</div>
-          {adminMemories.length === 0 && <div className="admin-empty">No memories submitted yet.</div>}
-          {adminMemories.map((m,i) => (
-            <div className="admin-row" key={i}>
-              <div className="admin-row-msg">{m.message}</div>
-              <div className="admin-row-meta">
-                <span><strong>{m.name}</strong></span>
-                {m.relationship && <span>- {m.relationship}</span>}
-                <span>{new Date(m.created_at).toLocaleDateString('en-CA', {year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
+          {adminTab === 'memories' && (
+            <div className="admin-panel">
+              <div className="admin-panel-header">
+                <div className="admin-panel-title">Memories</div>
+              </div>
+              <div className="admin-panel-body">
+                {adminMemories.length === 0 && <div className="admin-empty">No memories submitted yet.</div>}
+                {adminMemories.map((m,i) => (
+                  <div className="admin-row" key={i}>
+                    <div className="admin-row-msg">{m.message}</div>
+                    <div className="admin-row-meta">
+                      <span><strong>{m.name}</strong></span>
+                      {m.relationship && <span>- {m.relationship}</span>}
+                      <span>{new Date(m.created_at).toLocaleDateString('en-CA',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
+          )}
 
-          <div className="admin-section-title" style={{marginTop:'3rem'}}>Song Requests</div>
-          {adminSongs.length === 0 && <div className="admin-empty">No song requests yet.</div>}
-          {adminSongs.map((s,i) => (
-            <div className="admin-row" key={i}>
-              <div className="admin-song-title">{s.song_title}{s.artist && <span className="admin-song-artist"> - {s.artist}</span>}</div>
-              {s.note && <div className="admin-song-note">{s.note}</div>}
-              <div className="admin-row-meta">
-                <span><strong>{s.submitted_by}</strong></span>
-                <span>{new Date(s.created_at).toLocaleDateString('en-CA', {year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
+          {adminTab === 'songs' && (
+            <div className="admin-panel">
+              <div className="admin-panel-header">
+                <div className="admin-panel-title">Song Requests</div>
+                <button className="btn" onClick={downloadCSV} style={{padding:'0.6rem 1.2rem',fontSize:'0.68rem'}}>Download CSV</button>
+              </div>
+              <div className="admin-panel-body">
+                {adminSongs.length === 0 && <div className="admin-empty">No song requests yet.</div>}
+                {adminSongs.map((s,i) => (
+                  <div className="admin-row" key={i}>
+                    <div className="admin-song-title">{s.song_title}{s.artist && <span className="admin-song-artist"> - {s.artist}</span>}</div>
+                    {s.note && <div className="admin-song-note">{s.note}</div>}
+                    <div className="admin-row-meta">
+                      <span><strong>{s.submitted_by}</strong></span>
+                      <span>{new Date(s.created_at).toLocaleDateString('en-CA',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
+          )}
         </div>
       </>
     );
