@@ -463,7 +463,32 @@ export default function App() {
 
         <div className="divider"><div className="divider-d" /></div>
 
-        <section className="section" id="contribute">
+        <section className="section" id="contribute" style={{
+  background: `
+    repeating-linear-gradient(
+      transparent,
+      transparent 60px,
+      rgba(140,130,120,0.15) 60px,
+      rgba(140,130,120,0.15) 63px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 120px,
+      rgba(140,130,120,0.08) 120px,
+      rgba(140,130,120,0.08) 123px
+    ),
+    repeating-linear-gradient(
+      transparent,
+      transparent 30px,
+      rgba(140,130,120,0.06) 30px,
+      rgba(140,130,120,0.06) 31px
+    ),
+    linear-gradient(135deg, #d8d0c4 0%, #c8c0b4 30%, #d4ccc0 60%, #ccc4b8 100%)
+  `,
+  backgroundSize: '100% 63px, 123px 100%, 100% 31px, 100% 100%',
+  position: 'relative',
+}}>
           <div className="section-eyebrow">Share</div>
           <h2 className="section-title">Leave a piece of <em>yourself</em></h2>
           <p className="section-body">Help the family honour Merv -- share a memory, suggest a song for the memorial playlist, or contribute photos to the slideshow. Friends from Toronto, Torquay, and everywhere in between are welcome here.</p>
