@@ -179,6 +179,17 @@ const styles = `
     .gallery-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
   }
   @media (max-width: 420px) { .gallery-grid { grid-template-columns: 1fr; } }
+
+  /* THE WALL section - force dark text over brick background */
+  #contribute .section-eyebrow { color: #111 !important; font-weight: 600 !important; }
+  #contribute .section-title { color: #111 !important; font-weight: 400 !important; }
+  #contribute .section-title em { color: #7a5a10 !important; }
+  #contribute .section-body { color: #111 !important; font-weight: 500 !important; }
+  #contribute .tab { color: #cc0000 !important; font-weight: 600 !important; }
+  #contribute .tab.active { color: #880000 !important; font-weight: 700 !important; border-bottom-color: #cc0000 !important; }
+  #contribute .tab:hover:not(.active) { color: #000 !important; }
+  #contribute a { color: #1a1a1a !important; font-weight: 600 !important; text-decoration: underline !important; text-underline-offset: 3px !important; text-decoration-color: #7a5a10 !important; }
+  #contribute a:hover { color: #7a5a10 !important; }
 `;
 
 export default function App() {
@@ -239,20 +250,18 @@ export default function App() {
 
   const downloadCSV = () => {
     const escape = val => `"${(val||'').replace(/"/g, '""')}"`;
-    const rows = [
-      ['Song Title', 'Artist / Band', 'Why This Song', 'Submitted By', 'Date Submitted'],
-      ...adminSongs.map(s => [
-        escape(s.song_title),
-        escape(s.artist),
-        escape(s.note),
-        escape(s.submitted_by),
-        escape(new Date(s.created_at).toLocaleDateString('en-CA', {year:'numeric',month:'long',day:'numeric'}))
-      ])
-    ];
-    const csv = rows.map(r => r.join(',')).join('\n');
+    const headers = ['Song Title', 'Artist / Band', 'Why This Song', 'Submitted By', 'Date Submitted'];
+    const rows = adminSongs.map(s => [
+      escape(s.song_title),
+      escape(s.artist || ''),
+      escape(s.note || ''),
+      escape(s.submitted_by || 'Anonymous'),
+      escape(new Date(s.created_at).toLocaleDateString('en-CA', {year:'numeric', month:'long', day:'numeric'}))
+    ]);
+    const tsv = [headers.join('\t'), ...rows.map(r => r.join('\t'))].join('\n');
     const a = document.createElement('a');
-    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-    a.download = 'merv-song-requests.csv';
+    a.href = 'data:text/tab-separated-values;charset=utf-8,' + encodeURIComponent(tsv);
+    a.download = 'merv-song-requests.tsv';
     a.click();
   };
 
@@ -332,7 +341,7 @@ export default function App() {
             <div className="admin-panel">
               <div className="admin-panel-header">
                 <div className="admin-panel-title">Song Requests</div>
-                <button className="btn" onClick={downloadCSV} style={{padding:'0.6rem 1.2rem',fontSize:'0.68rem'}}>Download CSV</button>
+                <button className="btn" onClick={downloadCSV} style={{padding:'0.6rem 1.2rem',fontSize:'0.68rem'}}>Download for Excel</button>
               </div>
               <div className="admin-panel-body">
                 {adminSongs.length === 0 && <div className="admin-empty">No song requests yet.</div>}
@@ -377,14 +386,17 @@ export default function App() {
               <span>A Celebration of Life</span>
               <div className="hero-pill-dot" />
             </div>
-            <h1 className="hero-name">Mervyn<br /><em>Scoble</em></h1>
+            <h1 className="hero-name">Mervyn John<br /><em>Scoble</em></h1>
             <div className="hero-aka">-- "Mervo" --</div>
             <div className="hero-divider"><div className="hdl" /><div className="hdd" /><div className="hdl" /></div>
             <div className="hero-event">
               <strong>April 11, 2026 - 1:00 to 4:00 pm</strong>
-              212 Eglinton Ave E - 2nd Floor Party Room<br />
-              Toronto - Buzz code #170<br />
-              Snacks and refreshments will be served
+              Toronto, Ontario<br />
+              Snacks and refreshments will be served<br /><br />
+              <a href="https://www.facebook.com/merv.scoble" target="_blank" rel="noopener noreferrer"
+                style={{color:'var(--gold-light)',textDecoration:'none',borderBottom:'1px solid rgba(210,171,99,0.4)',fontSize:'0.85rem',letterSpacing:'0.08em'}}>
+                RSVP or message the family on Facebook
+              </a>
             </div>
           </div>
           <div className="hero-foot">
@@ -483,11 +495,23 @@ export default function App() {
             'repeating-linear-gradient(90deg, transparent 59px, #b8b4ae 59px, #b8b4ae 62px, transparent 62px, transparent 180px, #b8b4ae 180px, #b8b4ae 183px)',
           ].join(','),
         }}>
-          <div className="section-eyebrow">Share</div>
-          <h2 className="section-title">Leave a piece of <em>yourself</em></h2>
-          <p className="section-body">Help the family honour Merv -- share a memory, suggest a song for the memorial playlist, or contribute photos to the slideshow. Friends from Toronto, Torquay, and everywhere in between are welcome here.</p>
+          <div style={{
+            fontFamily: 'Impact, "Arial Narrow", sans-serif',
+            fontSize: 'clamp(3rem, 8vw, 5.5rem)',
+            fontWeight: 900,
+            color: '#1a1a1a',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            lineHeight: 1,
+            marginBottom: '0.4rem',
+            textShadow: '2px 2px 0px rgba(0,0,0,0.15)',
+            WebkitTextStroke: '1px rgba(0,0,0,0.3)',
+          }}>THE WALL</div>
+          <div className="section-eyebrow" style={{color:'#222', marginBottom:'1rem', fontWeight:500}}>Share</div>
+          <h2 className="section-title" style={{color:'#111'}}>Leave a piece of <em style={{color:'#7a5a10'}}>yourself</em></h2>
+          <p className="section-body" style={{color:'#222', fontWeight:400}}>Help the family honour Merv -- share a memory, suggest a song for the memorial playlist, or contribute photos to the slideshow. Friends from Toronto, Torquay, and everywhere in between are welcome here.</p>
 
-          <div className="tabs">
+          <div className="tabs" style={{borderBottom:'2px solid #444'}}>
             {[["memory","Share a Memory"],["song","Song Request"],["photos","Photos"]].map(([k,l]) => (
               <button key={k} className={`tab ${activeTab===k?"active":""}`} onClick={()=>setActiveTab(k)}>{l}</button>
             ))}
