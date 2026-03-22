@@ -482,7 +482,7 @@ export default function App() {
             </div>
             <div className="about-bio">
               <div className="about-eyebrow">Mervyn John Scoble - 1948 to 2025</div>
-              <p>Merv -- known to thousands around the world as <em>Mervo</em> -- was a British-Canadian artist, educator, internet pioneer, and lifelong Torquay United supporter. He passed away on December 24, 2025, aged 76.</p>
+              <p>Merv -- known to thousands around the world as <em>Mervo</em> -- was a British-Canadian artist, educator, internet pioneer, and lifelong Torquay United supporter. He passed away on December 24, 2025, aged 77.</p>
               <p>Born in Devon, England, Merv trained at the <strong>St. Martin's School of Art</strong> in London. In <strong>1971 he moved to Canada</strong>, where he became an art teacher at secondary and tertiary levels while pursuing a prolific practice spanning painting, engraving, photography, wood carving, and sculpture.</p>
               <p>His work ranged from <strong>intimate portraiture</strong> of musicians and athletes to <strong>architectural silkscreens</strong> of Yorkville, Chinatown, and Old Montreal. His Toronto Maple Leafs commissions were reproduced as limited edition lithographs co-signed by <strong>Darryl Sittler</strong> and <strong>Borje Salming</strong>.</p>
               <p>An early adopter of the internet, Merv set up the <strong>Torquay United fan forum in 1997</strong> from Canada -- connecting Gulls supporters across the globe long before social media existed.</p>
