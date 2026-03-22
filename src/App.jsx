@@ -238,10 +238,18 @@ export default function App() {
   };
 
   const downloadCSV = () => {
-    const csv = [
-      'Song,Artist,Note,Submitted By,Date',
-      ...adminSongs.map(s => `"${s.song_title}","${s.artist||''}","${s.note||''}","${s.submitted_by}","${new Date(s.created_at).toLocaleDateString('en-CA')}"`)
-    ].join('\n');
+    const escape = val => `"${(val||'').replace(/"/g, '""')}"`;
+    const rows = [
+      ['Song Title', 'Artist / Band', 'Why This Song', 'Submitted By', 'Date Submitted'],
+      ...adminSongs.map(s => [
+        escape(s.song_title),
+        escape(s.artist),
+        escape(s.note),
+        escape(s.submitted_by),
+        escape(new Date(s.created_at).toLocaleDateString('en-CA', {year:'numeric',month:'long',day:'numeric'}))
+      ])
+    ];
+    const csv = rows.map(r => r.join(',')).join('\n');
     const a = document.createElement('a');
     a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
     a.download = 'merv-song-requests.csv';
@@ -449,46 +457,32 @@ export default function App() {
 
         <section className="section" id="details">
           <div className="section-eyebrow">Event Details</div>
-          <h2 className="section-title">Joining us for <em>Merv</em></h2>
+          <h2 className="section-title">Joining us for <em>Mervyn John Scoble</em></h2>
           <div className="info-grid">
             <div className="info-cell"><div className="info-label">Date & Time</div><div className="info-val">April 11, 2026<br />1:00 to 4:00 pm</div></div>
-            <div className="info-cell"><div className="info-label">Location</div><div className="info-val">212 Eglinton Ave E<br />2nd Floor Party Room</div></div>
+            <div className="info-cell"><div className="info-label">Location</div><div className="info-val">Toronto, Ontario<br />2nd Floor Party Room</div></div>
             <div className="info-cell"><div className="info-label">Entry</div><div className="info-val">Buzz code #170</div></div>
             <div className="info-cell"><div className="info-label">Dress</div><div className="info-val">Colourful clothing or your favourite band t-shirt</div></div>
           </div>
-          <p className="section-body"><strong>Getting here:</strong> The closest TTC stop is Mt. Pleasant on Line 5. From Eglinton Station, walk east 12 minutes, or take any eastbound bus to Redpath. Limited visitor parking on-site -- please leave it for guests who need it and register with the concierge.</p>
+          <p className="section-body"><strong>Getting here:</strong> The closest TTC stop is Mt. Pleasant on Line 5. From Eglinton Station, walk east 12 minutes, or take any eastbound bus to Redpath. Limited visitor parking on-site -- please leave it for guests who need it and register with the concierge. Street parking and nearby lots are also available.</p>
           <p className="section-body"><strong>In lieu of flowers,</strong> please consider donating to the Canadian Association for Mental Health (CAMH). A custom donation link in Merv's honour is being prepared and will be shared before April 2.</p>
-          <p className="section-body" style={{fontSize:"0.9rem"}}>RSVP by text to Devon at <strong>647-291-3386</strong>.</p>
+          <p className="section-body">
+            <strong>To attend or for more details,</strong> please reach out through Merv's Facebook page -- the family will be in touch with the full address and any additional information.
+            {" "}<a href="https://www.facebook.com/merv.scoble" target="_blank" rel="noopener noreferrer" style={{color:'var(--gold)',textDecoration:'none',borderBottom:'1px solid rgba(182,144,58,0.4)'}}>Message the family on Facebook</a>
+          </p>
         </section>
 
         <div className="divider"><div className="divider-d" /></div>
 
         <section className="section" id="contribute" style={{
-  background: `
-    repeating-linear-gradient(
-      transparent,
-      transparent 60px,
-      rgba(140,130,120,0.15) 60px,
-      rgba(140,130,120,0.15) 63px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 120px,
-      rgba(140,130,120,0.08) 120px,
-      rgba(140,130,120,0.08) 123px
-    ),
-    repeating-linear-gradient(
-      transparent,
-      transparent 30px,
-      rgba(140,130,120,0.06) 30px,
-      rgba(140,130,120,0.06) 31px
-    ),
-    linear-gradient(135deg, #d8d0c4 0%, #c8c0b4 30%, #d4ccc0 60%, #ccc4b8 100%)
-  `,
-  backgroundSize: '100% 63px, 123px 100%, 100% 31px, 100% 100%',
-  position: 'relative',
-}}>
+          backgroundColor: '#f9f7f4',
+          backgroundImage: [
+            'repeating-linear-gradient(transparent, transparent 58px, #b8b4ae 58px, #b8b4ae 61px)',
+            'repeating-linear-gradient(90deg, transparent, transparent 118px, #b8b4ae 118px, #b8b4ae 121px)',
+            'repeating-linear-gradient(transparent, transparent 28px, #b8b4ae 28px, #b8b4ae 31px, transparent 31px, transparent 89px, #b8b4ae 89px, #b8b4ae 92px)',
+            'repeating-linear-gradient(90deg, transparent 59px, #b8b4ae 59px, #b8b4ae 62px, transparent 62px, transparent 180px, #b8b4ae 180px, #b8b4ae 183px)',
+          ].join(','),
+        }}>
           <div className="section-eyebrow">Share</div>
           <h2 className="section-title">Leave a piece of <em>yourself</em></h2>
           <p className="section-body">Help the family honour Merv -- share a memory, suggest a song for the memorial playlist, or contribute photos to the slideshow. Friends from Toronto, Torquay, and everywhere in between are welcome here.</p>
