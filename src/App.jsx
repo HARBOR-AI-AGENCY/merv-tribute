@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const SUPABASE_URL = "https://eopwxchguerhvlpevbxo.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcHd4Y2hndWVyaHZscGV2YnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwOTkzNjQsImV4cCI6MjA4OTY3NTM2NH0.JcaFxQALMiJymMrWBclr8bVLU8_uS9dph8j_GAZ6yps";
 const ADMIN_PASSWORD = "mervorocks";
-const GOOGLE_DRIVE_LINK = "https://drive.google.com/drive/folders/1txT1_N55dFO3BwTzddk_p02jWqlh9z-j?usp=drive_link";
+const DEVON_DRIVE_LINK = "https://drive.google.com/drive/u/1/folders/1mhP-GejBwU1b_qCMt-AEbO5Kgyn8H8ZS";
 
 async function supabaseInsert(table, data) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
@@ -17,6 +17,22 @@ async function supabaseInsert(table, data) {
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Submission failed");
+}
+
+async function uploadPhoto(file) {
+  const ext = file.name.split('.').pop();
+  const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/photos/${fileName}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      "Content-Type": file.type,
+    },
+    body: file,
+  });
+  if (!res.ok) throw new Error("Upload failed");
+  return `${SUPABASE_URL}/storage/v1/object/public/photos/${fileName}`;
 }
 
 const ARTWORKS = [
@@ -138,11 +154,13 @@ const styles = `
   .memory-meta { display: flex; align-items: center; gap: 0.7rem; }
   .memory-author { font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
   .memory-rel { font-size: 0.7rem; color: var(--gold); }
-  .drive-card { border: 1px solid var(--border); border-radius: 2px; padding: 2rem; display: flex; align-items: flex-start; gap: 1.5rem; background: var(--parchment); text-decoration: none; color: inherit; transition: box-shadow 0.25s; }
-  .drive-card:hover { box-shadow: 0 6px 28px rgba(37,52,38,0.12); }
-  .drive-icon { flex-shrink: 0; width: 48px; height: 48px; background: var(--forest); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--gold-light); font-size: 1.3rem; }
-  .drive-text h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 400; color: var(--forest); margin-bottom: 0.3rem; }
-  .drive-text p { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+  .photo-upload-area { border: 2px dashed #888; border-radius: 4px; padding: 2.5rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.7); transition: border-color 0.2s, background 0.2s; margin-bottom: 1rem; }
+  .photo-upload-area:hover { border-color: #333; background: rgba(255,255,255,0.9); }
+  .photo-upload-area input[type=file] { display: none; }
+  .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .photo-thumb { position: relative; padding-bottom: 100%; border-radius: 2px; overflow: hidden; border: 1px solid var(--border); background: var(--parchment); }
+  .photo-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .photo-thumb-name { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.55); color: white; font-size: 0.7rem; padding: 0.3rem 0.5rem; text-align: center; }
   .footer { background: var(--forest); color: rgba(245,240,230,0.42); text-align: center; padding: 4.5rem 2rem 3rem; font-size: 0.88rem; line-height: 2.2; }
   .footer-name { font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--gold-light); font-size: 1.7rem; display: block; margin-bottom: 0.4rem; font-weight: 300; }
   .footer-links { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.5rem; margin-top: 1.5rem; }
@@ -151,7 +169,7 @@ const styles = `
   .admin-wrap { max-width: 900px; margin: 0 auto; padding: 3rem 2rem; }
   .admin-title { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; color: var(--forest); margin-bottom: 0.4rem; font-weight: 300; }
   .admin-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 3rem; }
-  .admin-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+  .admin-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
   .admin-stat { padding: 1.5rem; border-radius: 2px; text-align: center; cursor: pointer; transition: opacity 0.2s; user-select: none; }
   .admin-stat:hover { opacity: 0.85; }
   .admin-stat-num { font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 300; display: block; }
@@ -169,18 +187,13 @@ const styles = `
   .admin-song-artist { color: var(--gold); }
   .admin-song-note { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-bottom: 0.3rem; }
   .admin-empty { color: var(--muted); font-size: 0.9rem; padding: 0.5rem 0; }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
-  @media (max-width: 700px) {
-    .about-inner { grid-template-columns: 1fr; gap: 2.5rem; }
-    .card { padding: 1.5rem; }
-    .drive-card { flex-direction: column; gap: 1rem; }
-    .nav-links { display: none; }
-    .gallery-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
-  }
-  @media (max-width: 420px) { .gallery-grid { grid-template-columns: 1fr; } }
+  .admin-photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 1rem; }
+  .admin-photo-item { position: relative; border-radius: 2px; overflow: hidden; border: 1px solid var(--border); }
+  .admin-photo-item img { width: 100%; height: 140px; object-fit: cover; display: block; }
+  .admin-photo-dl { display: block; text-align: center; padding: 0.4rem; background: var(--forest); color: var(--cream); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; }
+  .admin-photo-dl:hover { background: var(--forest-mid); }
 
-  /* THE WALL section - force dark text over brick background */
+  /* THE WALL section */
   #contribute .section-eyebrow { color: #111 !important; font-weight: 600 !important; }
   #contribute .section-title { color: #111 !important; font-weight: 400 !important; }
   #contribute .section-title em { color: #7a5a10 !important; }
@@ -190,6 +203,17 @@ const styles = `
   #contribute .tab:hover:not(.active) { color: #000 !important; }
   #contribute a { color: #1a1a1a !important; font-weight: 600 !important; text-decoration: underline !important; text-underline-offset: 3px !important; text-decoration-color: #7a5a10 !important; }
   #contribute a:hover { color: #7a5a10 !important; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+  @media (max-width: 700px) {
+    .about-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+    .card { padding: 1.5rem; }
+    .nav-links { display: none; }
+    .gallery-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .admin-stats { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 420px) { .gallery-grid { grid-template-columns: 1fr; } }
 `;
 
 export default function App() {
@@ -202,10 +226,17 @@ export default function App() {
   const [memState, setMemState] = useState("idle");
   const [songState, setSongState] = useState("idle");
   const [memories, setMemories] = useState([]);
+  const [photos, setPhotos] = useState([]);
+  const [photoState, setPhotoState] = useState("idle");
+  const [photoName, setPhotoName] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const fileInputRef = useRef(null);
+
   const [adminAuth, setAdminAuth] = useState(false);
   const [adminPass, setAdminPass] = useState('');
   const [adminMemories, setAdminMemories] = useState([]);
   const [adminSongs, setAdminSongs] = useState([]);
+  const [adminPhotos, setAdminPhotos] = useState([]);
   const [adminTab, setAdminTab] = useState(null);
 
   useEffect(() => {
@@ -215,6 +246,13 @@ export default function App() {
     .then(r => r.json())
     .then(data => { if (Array.isArray(data)) setMemories(data.map(m => ({ name: m.name, rel: m.relationship, text: m.message }))); })
     .catch(err => console.error("Fetch error:", err));
+
+    fetch(`${SUPABASE_URL}/rest/v1/photos?select=url,name,created_at&order=created_at.desc`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+    })
+    .then(r => r.json())
+    .then(data => { if (Array.isArray(data)) setPhotos(data); })
+    .catch(err => console.error("Photos fetch error:", err));
   }, []);
 
   useEffect(() => {
@@ -225,6 +263,9 @@ export default function App() {
     fetch(`${SUPABASE_URL}/rest/v1/song_requests?select=*&order=created_at.desc`, {
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
     }).then(r => r.json()).then(data => { if (Array.isArray(data)) setAdminSongs(data); });
+    fetch(`${SUPABASE_URL}/rest/v1/photos?select=*&order=created_at.desc`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+    }).then(r => r.json()).then(data => { if (Array.isArray(data)) setAdminPhotos(data); });
   }, [adminAuth]);
 
   const submitMemory = async () => {
@@ -248,13 +289,24 @@ export default function App() {
     } catch { setSongState("error"); }
   };
 
+  const submitPhoto = async () => {
+    if (!selectedFile) return;
+    setPhotoState("loading");
+    try {
+      const url = await uploadPhoto(selectedFile);
+      await supabaseInsert("photos", { url, name: photoName || "Anonymous", created_at: new Date().toISOString() });
+      setPhotos(prev => [{ url, name: photoName || "Anonymous" }, ...prev]);
+      setSelectedFile(null);
+      setPhotoName("");
+      setPhotoState("success");
+    } catch { setPhotoState("error"); }
+  };
+
   const downloadCSV = () => {
     const escape = val => `"${(val||'').replace(/"/g, '""')}"`;
     const headers = ['Song Title', 'Artist / Band', 'Why This Song', 'Submitted By', 'Date Submitted'];
     const rows = adminSongs.map(s => [
-      escape(s.song_title),
-      escape(s.artist || ''),
-      escape(s.note || ''),
+      escape(s.song_title), escape(s.artist || ''), escape(s.note || ''),
       escape(s.submitted_by || 'Anonymous'),
       escape(new Date(s.created_at).toLocaleDateString('en-CA', {year:'numeric', month:'long', day:'numeric'}))
     ]);
@@ -302,25 +354,23 @@ export default function App() {
           <div className="admin-sub">mervo.harborai.ca - All submissions</div>
 
           <div className="admin-stats">
-            <div className="admin-stat"
-              style={{background:'var(--forest)',color:'var(--cream)'}}
-              onClick={() => setAdminTab(adminTab === 'memories' ? null : 'memories')}>
+            <div className="admin-stat" style={{background:'var(--forest)',color:'var(--cream)'}} onClick={() => setAdminTab(adminTab==='memories'?null:'memories')}>
               <span className="admin-stat-num">{adminMemories.length}</span>
-              <span className="admin-stat-label">Memories - {adminTab==='memories' ? 'click to close' : 'click to view'}</span>
+              <span className="admin-stat-label">Memories - {adminTab==='memories'?'close':'view'}</span>
             </div>
-            <div className="admin-stat"
-              style={{background:'var(--gold)',color:'white'}}
-              onClick={() => setAdminTab(adminTab === 'songs' ? null : 'songs')}>
+            <div className="admin-stat" style={{background:'var(--gold)',color:'white'}} onClick={() => setAdminTab(adminTab==='songs'?null:'songs')}>
               <span className="admin-stat-num">{adminSongs.length}</span>
-              <span className="admin-stat-label">Song Requests - {adminTab==='songs' ? 'click to close' : 'click to view'}</span>
+              <span className="admin-stat-label">Song Requests - {adminTab==='songs'?'close':'view'}</span>
+            </div>
+            <div className="admin-stat" style={{background:'#4a6b8a',color:'white'}} onClick={() => setAdminTab(adminTab==='photos'?null:'photos')}>
+              <span className="admin-stat-num">{adminPhotos.length}</span>
+              <span className="admin-stat-label">Photos - {adminTab==='photos'?'close':'view'}</span>
             </div>
           </div>
 
           {adminTab === 'memories' && (
             <div className="admin-panel">
-              <div className="admin-panel-header">
-                <div className="admin-panel-title">Memories</div>
-              </div>
+              <div className="admin-panel-header"><div className="admin-panel-title">Memories</div></div>
               <div className="admin-panel-body">
                 {adminMemories.length === 0 && <div className="admin-empty">No memories submitted yet.</div>}
                 {adminMemories.map((m,i) => (
@@ -355,6 +405,23 @@ export default function App() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {adminTab === 'photos' && (
+            <div className="admin-panel">
+              <div className="admin-panel-header"><div className="admin-panel-title">Submitted Photos</div></div>
+              <div className="admin-panel-body">
+                {adminPhotos.length === 0 && <div className="admin-empty">No photos submitted yet.</div>}
+                <div className="admin-photo-grid">
+                  {adminPhotos.map((p,i) => (
+                    <div className="admin-photo-item" key={i}>
+                      <img src={p.url} alt={p.name} />
+                      <a className="admin-photo-dl" href={p.url} download target="_blank" rel="noopener noreferrer">Download</a>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -394,7 +461,7 @@ export default function App() {
               Toronto, Ontario<br />
               Snacks and refreshments will be served<br /><br />
               <a href="https://www.facebook.com/merv.scoble" target="_blank" rel="noopener noreferrer"
-                style={{color:'var(--gold-light)',textDecoration:'none',borderBottom:'1px solid rgba(210,171,99,0.4)',fontSize:'0.85rem',letterSpacing:'0.08em'}}>
+                style={{color:'var(--gold-light)',textDecoration:'none',borderBottom:'1px solid rgba(210,171,99,0.5)',paddingBottom:'1px'}}>
                 RSVP or message the family on Facebook
               </a>
             </div>
@@ -432,7 +499,7 @@ export default function App() {
         <section className="section" id="art">
           <div className="section-eyebrow">The Work</div>
           <h2 className="section-title">Mervyn Scoble -- <em>Artist</em></h2>
-          <p className="section-body">Merv's body of work spans five decades and hundreds of pieces -- from expressive musician portraits and Canadian sports icons to architectural lithographs of Toronto and Montreal. His work is held in collections across Canada, the UK, and beyond.</p>
+          <p className="section-body">Merv's body of work spans five decades and hundreds of pieces -- from expressive musician portraits and Canadian sports icons to architectural lithographs of Toronto and Montreal.</p>
           <div className="gallery-grid">
             {ARTWORKS.map((art, i) => (
               <a key={i} className="art-card" href={art.link} target="_blank" rel="noopener noreferrer">
@@ -450,7 +517,7 @@ export default function App() {
           </div>
           <div className="find-more">
             <h3>Hundreds more works across the web</h3>
-            <p>Merv's limited edition lithographs are available through Artistica Fine Art, and his work appears on Artsy, Heffel, and collectors' sites worldwide. Visit his Facebook page for personal works and rock icon portraits.</p>
+            <p>Merv's limited edition lithographs are available through Artistica Fine Art, and his work appears on Artsy, Heffel, and collectors' sites worldwide.</p>
             <div className="art-links">
               {ART_LINKS.map((l, i) => (
                 <a key={i} className="art-link-card" href={l.url} target="_blank" rel="noopener noreferrer">
@@ -476,7 +543,7 @@ export default function App() {
             <div className="info-cell"><div className="info-label">Entry</div><div className="info-val">Buzz code #170</div></div>
             <div className="info-cell"><div className="info-label">Dress</div><div className="info-val">Colourful clothing or your favourite band t-shirt</div></div>
           </div>
-          <p className="section-body"><strong>Getting here:</strong> The closest TTC stop is Mt. Pleasant on Line 5. From Eglinton Station, walk east 12 minutes, or take any eastbound bus to Redpath. Limited visitor parking on-site -- please leave it for guests who need it and register with the concierge. Street parking and nearby lots are also available.</p>
+          <p className="section-body"><strong>Getting here:</strong> The closest TTC stop is Mt. Pleasant on Line 5. From Eglinton Station, walk east 12 minutes, or take any eastbound bus to Redpath. Limited visitor parking on-site -- please leave it for guests who need it and register with the concierge.</p>
           <p className="section-body"><strong>In lieu of flowers,</strong> please consider donating to the Canadian Association for Mental Health (CAMH). A custom donation link in Merv's honour is being prepared and will be shared before April 2.</p>
           <p className="section-body">
             <strong>To attend or for more details,</strong> please reach out through Merv's Facebook page -- the family will be in touch with the full address and any additional information.
@@ -492,21 +559,10 @@ export default function App() {
           backgroundPosition: 'center',
           backgroundAttachment: 'local',
         }}>
-          <div style={{
-            fontFamily: 'Impact, "Arial Narrow", sans-serif',
-            fontSize: 'clamp(3rem, 8vw, 5.5rem)',
-            fontWeight: 900,
-            color: '#1a1a1a',
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            lineHeight: 1,
-            marginBottom: '0.4rem',
-            textShadow: '2px 2px 0px rgba(0,0,0,0.15)',
-            WebkitTextStroke: '1px rgba(0,0,0,0.3)',
-          }}>THE WALL</div>
-          <div className="section-eyebrow" style={{color:'#222', marginBottom:'1rem', fontWeight:500}}>Share</div>
+          <div style={{fontFamily:'Impact,"Arial Narrow",sans-serif',fontSize:'clamp(3rem,8vw,5.5rem)',fontWeight:900,color:'#1a1a1a',letterSpacing:'0.12em',textTransform:'uppercase',lineHeight:1,marginBottom:'0.4rem',textShadow:'2px 2px 0px rgba(0,0,0,0.15)',WebkitTextStroke:'1px rgba(0,0,0,0.3)'}}>THE WALL</div>
+          <div className="section-eyebrow" style={{color:'#222',marginBottom:'1rem',fontWeight:500}}>Share</div>
           <h2 className="section-title" style={{color:'#111'}}>Leave a piece of <em style={{color:'#7a5a10'}}>yourself</em></h2>
-          <p className="section-body" style={{color:'#222', fontWeight:400}}>Help the family honour Merv -- share a memory, suggest a song for the memorial playlist, or contribute photos to the slideshow. Friends from Toronto, Torquay, and everywhere in between are welcome here.</p>
+          <p className="section-body" style={{color:'#222',fontWeight:400}}>Help the family honour Merv -- share a memory, suggest a song for the memorial playlist, or contribute a photo to the gallery.</p>
 
           <div className="tabs" style={{borderBottom:'2px solid #444'}}>
             {[["memory","Share a Memory"],["song","Song Request"],["photos","Photos"]].map(([k,l]) => (
@@ -522,7 +578,7 @@ export default function App() {
                 <div className="form-group"><label>Your Memory or Message</label><textarea placeholder="Share a story, a moment, or simply what Merv meant to you..." value={memoryForm.message} onChange={e=>setMemoryForm(p=>({...p,message:e.target.value}))} style={{minHeight:160}} /></div>
                 <button className="btn" onClick={submitMemory} disabled={memState==="loading"||!memoryForm.message.trim()}>{memState==="loading"?"Submitting...":"Submit Memory"}</button>
                 {memState==="success" && <div className="success-msg">Your memory has been added. Thank you.</div>}
-                {memState==="error" && <div className="error-msg">Something went wrong. Please try again or contact Devon at 647-291-3386.</div>}
+                {memState==="error" && <div className="error-msg">Something went wrong. Please try again or contact Devon on Facebook.</div>}
               </div>
               {memories.length > 0 && (
                 <div>
@@ -558,15 +614,44 @@ export default function App() {
 
           {activeTab==="photos" && (
             <div>
-              <p className="section-body">The family has set up a shared Google Drive folder for photos and notes to be featured in the memorial slideshow. Please contribute before April 2.</p>
-              <a className="drive-card" href={GOOGLE_DRIVE_LINK} target="_blank" rel="noopener noreferrer">
-                <div className="drive-icon">folder</div>
-                <div className="drive-text">
-                  <h3>Merv Scoble -- Celebration of Life</h3>
-                  <p>Upload photos for the slideshow, or leave a written note about Merv to appear on screen during the memorial.</p>
+              <div className="card" style={{marginBottom:'1.5rem'}}>
+                <p style={{color:'#333',fontSize:'0.95rem',marginBottom:'1.5rem',lineHeight:1.7}}>Share a photo of Merv -- it will appear in the gallery below for everyone to see. Please contribute before April 2.</p>
+                <div className="photo-upload-area" onClick={() => fileInputRef.current.click()}>
+                  <input type="file" ref={fileInputRef} accept="image/*" onChange={e => setSelectedFile(e.target.files[0])} />
+                  {selectedFile
+                    ? <div style={{color:'#333',fontWeight:500}}>{selectedFile.name}</div>
+                    : <div style={{color:'#555'}}>Click to choose a photo</div>
+                  }
                 </div>
-              </a>
-              <p style={{marginTop:"1.5rem",fontSize:"0.86rem",color:"var(--muted)"}}>Need help? Reach Devon directly at <strong>647-291-3386</strong>.</p>
+                <div className="form-group">
+                  <label>Your Name (optional)</label>
+                  <input placeholder="Anonymous is fine" value={photoName} onChange={e=>setPhotoName(e.target.value)} />
+                </div>
+                <button className="btn" onClick={submitPhoto} disabled={photoState==="loading"||!selectedFile}>
+                  {photoState==="loading"?"Uploading...":"Upload Photo"}
+                </button>
+                {photoState==="success" && <div className="success-msg">Photo uploaded -- thank you!</div>}
+                {photoState==="error" && <div className="error-msg">Upload failed. Please try again.</div>}
+              </div>
+
+              <div style={{background:'rgba(255,255,255,0.8)',border:'1px solid #aaa',borderRadius:'2px',padding:'1.2rem 1.5rem',marginBottom:'1.5rem',display:'flex',alignItems:'center',justifyContent:'space-between',gap:'1rem',flexWrap:'wrap'}}>
+                <div style={{color:'#333',fontSize:'0.9rem'}}>You can also add photos directly to Devon's Google Drive slideshow folder</div>
+                <a href={DEVON_DRIVE_LINK} target="_blank" rel="noopener noreferrer" className="btn" style={{flexShrink:0,textDecoration:'none'}}>Open Google Drive Folder</a>
+              </div>
+
+              {photos.length > 0 && (
+                <div>
+                  <div className="section-eyebrow" style={{marginBottom:'1rem'}}>Photos shared</div>
+                  <div className="photo-grid">
+                    {photos.map((p,i) => (
+                      <div className="photo-thumb" key={i}>
+                        <img src={p.url} alt={p.name} />
+                        <div className="photo-thumb-name">{p.name}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </section>
@@ -582,7 +667,7 @@ export default function App() {
             <a className="footer-link" href="https://artisticafineart.com/collections/canadian-art/artist_scoble-mervyn" target="_blank" rel="noopener noreferrer">Artistica Fine Art</a>
             <a className="footer-link" href="https://www.facebook.com/merv.scoble" target="_blank" rel="noopener noreferrer">Facebook</a>
           </div>
-          <div style={{marginTop:"1.5rem",fontSize:"0.78rem"}}>Questions? Contact Devon at 647-291-3386</div>
+          <div style={{marginTop:"1.5rem",fontSize:"0.78rem"}}>Questions? Contact the family on Facebook</div>
         </footer>
 
       </div>
