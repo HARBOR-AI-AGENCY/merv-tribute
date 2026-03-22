@@ -386,7 +386,7 @@ export default function App() {
               <span>A Celebration of Life</span>
               <div className="hero-pill-dot" />
             </div>
-            <h1 className="hero-name">Mervyn John<br /><em>Scoble</em></h1>
+            <h1 className="hero-name">Mervyn<br /><em>Scoble</em></h1>
             <div className="hero-aka">-- "Mervo" --</div>
             <div className="hero-divider"><div className="hdl" /><div className="hdd" /><div className="hdl" /></div>
             <div className="hero-event">
