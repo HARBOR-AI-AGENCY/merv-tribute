@@ -487,13 +487,10 @@ export default function App() {
         <div className="divider"><div className="divider-d" /></div>
 
         <section className="section" id="contribute" style={{
-          backgroundColor: '#f9f7f4',
-          backgroundImage: [
-            'repeating-linear-gradient(transparent, transparent 58px, #b8b4ae 58px, #b8b4ae 61px)',
-            'repeating-linear-gradient(90deg, transparent, transparent 118px, #b8b4ae 118px, #b8b4ae 121px)',
-            'repeating-linear-gradient(transparent, transparent 28px, #b8b4ae 28px, #b8b4ae 31px, transparent 31px, transparent 89px, #b8b4ae 89px, #b8b4ae 92px)',
-            'repeating-linear-gradient(90deg, transparent 59px, #b8b4ae 59px, #b8b4ae 62px, transparent 62px, transparent 180px, #b8b4ae 180px, #b8b4ae 183px)',
-          ].join(','),
+          backgroundImage: "url('/the_wall_bg.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'local',
         }}>
           <div style={{
             fontFamily: 'Impact, "Arial Narrow", sans-serif',
