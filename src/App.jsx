@@ -539,11 +539,11 @@ export default function App() {
           <h2 className="section-title">Joining us for <em>Mervyn John Scoble</em></h2>
           <div className="info-grid">
             <div className="info-cell"><div className="info-label">Date & Time</div><div className="info-val">April 11, 2026<br />1:00 to 4:00 pm</div></div>
-            <div className="info-cell"><div className="info-label">Location</div><div className="info-val">Toronto, Ontario<br />2nd Floor Party Room</div></div>
-            <div className="info-cell"><div className="info-label">Entry</div><div className="info-val">Buzz code #170</div></div>
+            <div className="info-cell"><div className="info-label">Location</div><div className="info-val">Toronto, Ontario</div></div>
+            
             <div className="info-cell"><div className="info-label">Dress</div><div className="info-val">Colourful clothing or your favourite band t-shirt</div></div>
           </div>
-          <p className="section-body"><strong>Getting here:</strong> The closest TTC stop is Mt. Pleasant on Line 5. From Eglinton Station, walk east 12 minutes, or take any eastbound bus to Redpath. Limited visitor parking on-site -- please leave it for guests who need it and register with the concierge.</p>
+          
           <p className="section-body"><strong>In lieu of flowers,</strong> please consider donating to the Canadian Association for Mental Health (CAMH). A custom donation link in Merv's honour is being prepared and will be shared before April 2.</p>
           <p className="section-body">
             <strong>To attend or for more details,</strong> please reach out through Merv's Facebook page -- the family will be in touch with the full address and any additional information.
