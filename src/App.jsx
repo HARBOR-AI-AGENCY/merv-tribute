@@ -481,8 +481,8 @@ export default function App() {
               <cite>-- Sarah Scoble, daughter</cite>
             </div>
             <div className="about-bio">
-              <div className="about-eyebrow">Mervyn John Scoble - 1948 to 2025</div>
-              <p>Merv -- known to thousands around the world as <em>Mervo</em> -- was a British-Canadian artist, educator, internet pioneer, and lifelong Torquay United supporter. He passed away on December 24, 2025, aged 77.</p>
+              <div className="about-eyebrow">Mervyn John Scoble - 1948 to 2026</div>
+              <p>Merv -- known to thousands around the world as <em>Mervo</em> -- was a British-Canadian artist, educator, internet pioneer, and lifelong Torquay United supporter. He passed away in January 2026, aged 77.</p>
               <p>Born in Devon, England, Merv trained at the <strong>St. Martin's School of Art</strong> in London. In <strong>1971 he moved to Canada</strong>, where he became an art teacher at secondary and tertiary levels while pursuing a prolific practice spanning painting, engraving, photography, wood carving, and sculpture.</p>
               <p>His work ranged from <strong>intimate portraiture</strong> of musicians and athletes to <strong>architectural silkscreens</strong> of Yorkville, Chinatown, and Old Montreal. His Toronto Maple Leafs commissions were reproduced as limited edition lithographs co-signed by <strong>Darryl Sittler</strong> and <strong>Borje Salming</strong>.</p>
               <p>An early adopter of the internet, Merv set up the <strong>Torquay United fan forum in 1997</strong> from Canada -- connecting Gulls supporters across the globe long before social media existed.</p>
@@ -539,11 +539,11 @@ export default function App() {
           <h2 className="section-title">Joining us for <em>Mervyn John Scoble</em></h2>
           <div className="info-grid">
             <div className="info-cell"><div className="info-label">Date & Time</div><div className="info-val">April 11, 2026<br />1:00 to 4:00 pm</div></div>
-            <div className="info-cell"><div className="info-label">Location</div><div className="info-val">Toronto, Ontario</div></div>
-            
+            <div className="info-cell"><div className="info-label">Location</div><div className="info-val">Toronto, Ontario<br />2nd Floor Party Room</div></div>
+            <div className="info-cell"><div className="info-label">Entry</div><div className="info-val">Buzz code #170</div></div>
             <div className="info-cell"><div className="info-label">Dress</div><div className="info-val">Colourful clothing or your favourite band t-shirt</div></div>
           </div>
-          
+          <p className="section-body"><strong>Getting here:</strong> The closest TTC stop is Mt. Pleasant on Line 5. From Eglinton Station, walk east 12 minutes, or take any eastbound bus to Redpath. Limited visitor parking on-site -- please leave it for guests who need it and register with the concierge.</p>
           <p className="section-body"><strong>In lieu of flowers,</strong> please consider donating to the Canadian Association for Mental Health (CAMH). A custom donation link in Merv's honour is being prepared and will be shared before April 2.</p>
           <p className="section-body">
             <strong>To attend or for more details,</strong> please reach out through Merv's Facebook page -- the family will be in touch with the full address and any additional information.
@@ -660,7 +660,7 @@ export default function App() {
 
         <footer className="footer">
           <span className="footer-name">Mervyn John Scoble</span>
-          <span style={{color:"rgba(245,240,230,0.55)",fontSize:"0.82rem"}}>1948 to 2025 - Artist - Teacher - Internet Pioneer - Gulls Supporter</span>
+          <span style={{color:"rgba(245,240,230,0.55)",fontSize:"0.82rem"}}>1948 to 2026 - Artist - Teacher - Internet Pioneer - Gulls Supporter</span>
           <br />Remembered with love - April 11, 2026 - Toronto
           <div className="footer-links">
             <a className="footer-link" href="https://torquayunited.com/mervyn-scoble-rip" target="_blank" rel="noopener noreferrer">Torquay United tribute</a>
