@@ -35,8 +35,9 @@ async function uploadPhoto(blob, name) {
 }
 
 function compressAndCrop(imgSrc, aspectRatio, maxW = 1200) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const img = new Image();
+    img.onerror = () => reject(new Error("Image failed to load"));
     img.onload = () => {
       const canvas = document.createElement('canvas');
       let sw = img.width, sh = img.height;
@@ -319,6 +320,12 @@ export default function App() {
   const [adminSongs, setAdminSongs] = useState([]);
   const [adminPhotos, setAdminPhotos] = useState([]);
   const [adminTab, setAdminTab] = useState(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewSrc && previewSrc.startsWith('blob:')) URL.revokeObjectURL(previewSrc);
+    };
+  }, [previewSrc]);
 
   useEffect(() => {
     fetch(`${SUPABASE_URL}/rest/v1/memories?select=name,relationship,message&order=created_at.desc`, {
