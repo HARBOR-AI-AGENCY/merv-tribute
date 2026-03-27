@@ -300,6 +300,7 @@ export default function App() {
   const [memState, setMemState] = useState("idle");
   const [songState, setSongState] = useState("idle");
   const [memories, setMemories] = useState([]);
+  const [songs, setSongs] = useState([]);
   const [photos, setPhotos] = useState([]);
 
   // Photo upload state
@@ -323,6 +324,10 @@ export default function App() {
     fetch(`${SUPABASE_URL}/rest/v1/memories?select=name,relationship,message&order=created_at.desc`, {
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
     }).then(r => r.json()).then(data => { if (Array.isArray(data)) setMemories(data.map(m => ({ name: m.name, rel: m.relationship, text: m.message }))); }).catch(console.error);
+
+    fetch(`${SUPABASE_URL}/rest/v1/song_requests?select=song_title,artist,note,submitted_by&order=created_at.desc`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+    }).then(r => r.json()).then(data => { if (Array.isArray(data)) setSongs(data); }).catch(console.error);
 
     fetch(`${SUPABASE_URL}/rest/v1/photos?select=url,name,description,created_at&order=created_at.desc`, {
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
@@ -382,6 +387,7 @@ export default function App() {
     setSongState("loading");
     try {
       await supabaseInsert("song_requests", { submitted_by: songForm.name || "Anonymous", song_title: songForm.song, artist: songForm.artist, note: songForm.note, created_at: new Date().toISOString() });
+      setSongs(prev => [{ song_title: songForm.song, artist: songForm.artist, note: songForm.note, submitted_by: songForm.name || "Anonymous" }, ...prev]);
       setSongForm({ name: "", song: "", artist: "", note: "" });
       setSongState("success");
     } catch { setSongState("error"); }
@@ -648,15 +654,31 @@ export default function App() {
           )}
 
           {activeTab==="song" && (
-            <div className="card">
-              <p style={{color:"#333",fontSize:"0.92rem",marginBottom:"1.5rem",lineHeight:1.75}}>Suggest a song for the memorial playlist -- something Merv loved, something that reminds you of him, or something you'd like played in his honour.</p>
-              <div className="form-group"><label>Song Title</label><input placeholder="Song name" value={songForm.song} onChange={e=>setSongForm(p=>({...p,song:e.target.value}))} /></div>
-              <div className="form-group"><label>Artist / Band</label><input placeholder="Who performs it?" value={songForm.artist} onChange={e=>setSongForm(p=>({...p,artist:e.target.value}))} /></div>
-              <div className="form-group"><label>Why this song? (optional)</label><textarea placeholder="A line, a memory, a reason..." value={songForm.note} onChange={e=>setSongForm(p=>({...p,note:e.target.value}))} style={{minHeight:100}} /></div>
-              <div className="form-group"><label>Your Name (optional)</label><input placeholder="Anonymous is fine" value={songForm.name} onChange={e=>setSongForm(p=>({...p,name:e.target.value}))} /></div>
-              <button className="btn btn-full" onClick={submitSong} disabled={songState==="loading"||!songForm.song.trim()}>{songState==="loading"?"Submitting...":"Submit Song Request"}</button>
-              {songState==="success" && <div className="success-msg">Song request received -- thank you.</div>}
-              {songState==="error" && <div className="error-msg">Something went wrong. Please try again.</div>}
+            <div>
+              <div className="card">
+                <p style={{color:"#333",fontSize:"0.92rem",marginBottom:"1.5rem",lineHeight:1.75}}>Suggest a song for the memorial playlist -- something Merv loved, something that reminds you of him, or something you'd like played in his honour.</p>
+                <div className="form-group"><label>Song Title</label><input placeholder="Song name" value={songForm.song} onChange={e=>setSongForm(p=>({...p,song:e.target.value}))} /></div>
+                <div className="form-group"><label>Artist / Band</label><input placeholder="Who performs it?" value={songForm.artist} onChange={e=>setSongForm(p=>({...p,artist:e.target.value}))} /></div>
+                <div className="form-group"><label>Why this song? (optional)</label><textarea placeholder="A line, a memory, a reason..." value={songForm.note} onChange={e=>setSongForm(p=>({...p,note:e.target.value}))} style={{minHeight:100}} /></div>
+                <div className="form-group"><label>Your Name (optional)</label><input placeholder="Anonymous is fine" value={songForm.name} onChange={e=>setSongForm(p=>({...p,name:e.target.value}))} /></div>
+                <button className="btn btn-full" onClick={submitSong} disabled={songState==="loading"||!songForm.song.trim()}>{songState==="loading"?"Submitting...":"Submit Song Request"}</button>
+                {songState==="success" && <div className="success-msg">Song request received -- thank you.</div>}
+                {songState==="error" && <div className="error-msg">Something went wrong. Please try again.</div>}
+              </div>
+              {songs.length>0 && (
+                <div>
+                  <div className="section-eyebrow" style={{marginTop:"2rem",marginBottom:"0.9rem"}}>Songs suggested</div>
+                  <div className="memories-wall">
+                    {songs.map((s,i)=>(
+                      <div className="memory-card" key={i}>
+                        <div className="memory-text">{s.song_title}{s.artist && <span style={{fontStyle:"normal"}}> — {s.artist}</span>}</div>
+                        {s.note && <div style={{fontSize:"0.88rem",color:"var(--muted)",marginBottom:"0.5rem",lineHeight:1.6}}>{s.note}</div>}
+                        <div className="memory-meta"><div className="memory-author">-- {s.submitted_by}</div></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
