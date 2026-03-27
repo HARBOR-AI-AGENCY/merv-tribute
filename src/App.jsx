@@ -122,6 +122,11 @@ const styles = `
   .hero-foot-txt { font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(245,240,230,0.28); }
   .bounce { color: rgba(182,144,58,0.45); animation: bounce 2.2s infinite; font-size: 0.85rem; }
 
+  .hero-wall-link { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 2.2rem; padding: 0.45rem 1.4rem; border: 1px solid rgba(182,144,58,0.22); border-radius: 100px; text-decoration: none; color: rgba(210,171,99,0.5); font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; transition: color 0.3s, border-color 0.3s; animation: fadeUp 0.9s 0.55s ease both; }
+  .hero-wall-link:hover { color: var(--gold-light); border-color: rgba(182,144,58,0.45); }
+  .hero-wall-link-arrow { font-size: 0.7rem; opacity: 0.6; transition: opacity 0.3s; }
+  .hero-wall-link:hover .hero-wall-link-arrow { opacity: 1; }
+
   .about { background: var(--forest); position: relative; }
   .about-inner { max-width: 960px; margin: 0 auto; padding: 4rem 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
   .about-quote { position: relative; padding: 1rem 0; }
@@ -558,6 +563,9 @@ export default function App() {
                 RSVP or message the family on Facebook
               </a>
             </div>
+            <a href="#contribute" className="hero-wall-link">
+              Add to Merv's Wall <span className="hero-wall-link-arrow">&#8595;</span>
+            </a>
           </div>
           <div className="hero-foot"><span className="hero-foot-txt">Scroll to remember Merv</span><span className="bounce">down</span></div>
         </section>
