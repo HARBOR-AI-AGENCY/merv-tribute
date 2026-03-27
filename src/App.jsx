@@ -280,6 +280,8 @@ const styles = `
     .admin-photo-grid { grid-template-columns: 1fr 1fr; }
     .photo-grid-public { grid-template-columns: 1fr 1fr; }
     .aspect-btns { gap: 0.4rem; }
+    .tabs { overflow-x: visible; }
+    .tab { flex-shrink: 1; white-space: normal; text-align: center; padding: 0.75rem 0.6rem; font-size: 0.65rem; min-width: 0; }
   }
   @media (max-width: 380px) {
     .gallery-grid { grid-template-columns: 1fr; }
