@@ -563,7 +563,10 @@ export default function App() {
                 RSVP or message the family on Facebook
               </a>
             </div>
-            <a href="#contribute" className="hero-wall-link">
+            <a href="#contribute" className="hero-wall-link" onClick={e => {
+              e.preventDefault();
+              document.getElementById('contribute')?.scrollIntoView({ behavior: 'smooth' });
+            }}>
               Add to Merv's Wall <span className="hero-wall-link-arrow">&#8595;</span>
             </a>
           </div>
