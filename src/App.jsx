@@ -5,6 +5,20 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const ADMIN_PASSWORD = "mervorocks";
 const DEVON_DRIVE_LINK = "https://drive.google.com/drive/u/1/folders/1mhP-GejBwU1b_qCMt-AEbO5Kgyn8H8ZS";
 
+async function supabaseUpdate(table, id, data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Update failed");
+}
+
 async function supabaseInsert(table, data) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
     method: "POST",
@@ -34,29 +48,67 @@ async function uploadPhoto(blob, name) {
   return `${SUPABASE_URL}/storage/v1/object/public/photos/${fileName}`;
 }
 
-function compressAndCrop(imgSrc, aspectRatio, maxW = 1200) {
+function rotateStoragePhoto(photoUrl, degrees) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onerror = () => reject(new Error("Failed to load image"));
+    img.onload = () => {
+      const rotated90 = degrees === 90 || degrees === 270;
+      const cw = rotated90 ? img.height : img.width;
+      const ch = rotated90 ? img.width : img.height;
+      const canvas = document.createElement('canvas');
+      canvas.width = cw;
+      canvas.height = ch;
+      const ctx = canvas.getContext('2d');
+      ctx.translate(cw / 2, ch / 2);
+      ctx.rotate((degrees * Math.PI) / 180);
+      ctx.drawImage(img, -img.width / 2, -img.height / 2);
+      canvas.toBlob(async (blob) => {
+        try { resolve(await uploadPhoto(blob, '')); }
+        catch (e) { reject(e); }
+      }, 'image/jpeg', 0.82);
+    };
+    img.src = photoUrl;
+  });
+}
+
+function compressAndCrop(imgSrc, aspectRatio, maxW = 1200, rotation = 0) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onerror = () => reject(new Error("Image failed to load"));
     img.onload = () => {
+      // Step 1: apply rotation
+      const rotated90 = rotation === 90 || rotation === 270;
+      const rotW = rotated90 ? img.height : img.width;
+      const rotH = rotated90 ? img.width : img.height;
+      const rotCanvas = document.createElement('canvas');
+      rotCanvas.width = rotW;
+      rotCanvas.height = rotH;
+      const rotCtx = rotCanvas.getContext('2d');
+      rotCtx.translate(rotW / 2, rotH / 2);
+      rotCtx.rotate((rotation * Math.PI) / 180);
+      rotCtx.drawImage(img, -img.width / 2, -img.height / 2);
+
+      // Step 2: crop and compress from rotated canvas
       const canvas = document.createElement('canvas');
-      let sw = img.width, sh = img.height;
+      let sw = rotW, sh = rotH;
       let sx = 0, sy = 0;
       if (aspectRatio) {
         const srcRatio = sw / sh;
         if (srcRatio > aspectRatio) {
           sw = Math.round(sh * aspectRatio);
-          sx = Math.round((img.width - sw) / 2);
+          sx = Math.round((rotW - sw) / 2);
         } else {
           sh = Math.round(sw / aspectRatio);
-          sy = Math.round((img.height - sh) / 2);
+          sy = Math.round((rotH - sh) / 2);
         }
       }
       const scale = Math.min(1, maxW / sw);
       canvas.width = Math.round(sw * scale);
       canvas.height = Math.round(sh * scale);
       const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(rotCanvas, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
       canvas.toBlob(resolve, 'image/jpeg', 0.82);
     };
     img.src = imgSrc;
@@ -313,6 +365,7 @@ export default function App() {
   const [rawSrc, setRawSrc] = useState(null);
   const [previewSrc, setPreviewSrc] = useState(null);
   const [selectedAspect, setSelectedAspect] = useState(null);
+  const [rotation, setRotation] = useState(0);
   const [photoName, setPhotoName] = useState("");
   const [photoDesc, setPhotoDesc] = useState("");
   const [photoState, setPhotoState] = useState("idle");
@@ -325,6 +378,7 @@ export default function App() {
   const [adminSongs, setAdminSongs] = useState([]);
   const [adminPhotos, setAdminPhotos] = useState([]);
   const [adminTab, setAdminTab] = useState(null);
+  const [rotatingPhotoId, setRotatingPhotoId] = useState(null);
 
   useEffect(() => {
     return () => {
@@ -362,15 +416,16 @@ export default function App() {
       setRawSrc(ev.target.result);
       setPreviewSrc(ev.target.result);
       setSelectedAspect(null);
+      setRotation(0);
       setPhotoState("idle");
     };
     reader.readAsDataURL(file);
   };
 
-  // Update preview when aspect changes
-  const updatePreview = useCallback(async (aspect) => {
+  // Update preview when aspect or rotation changes
+  const updatePreview = useCallback(async (aspect, rot) => {
     if (!rawSrc) return;
-    const blob = await compressAndCrop(rawSrc, aspect, 1200);
+    const blob = await compressAndCrop(rawSrc, aspect, 1200, rot);
     const url = URL.createObjectURL(blob);
     setPreviewSrc(prev => {
       if (prev && prev.startsWith('blob:')) URL.revokeObjectURL(prev);
@@ -380,7 +435,13 @@ export default function App() {
 
   const handleAspectChange = (aspect) => {
     setSelectedAspect(aspect);
-    updatePreview(aspect);
+    updatePreview(aspect, rotation);
+  };
+
+  const handleRotate = (dir) => {
+    const newRot = (rotation + dir + 360) % 360;
+    setRotation(newRot);
+    updatePreview(selectedAspect, newRot);
   };
 
   const submitMemory = async () => {
@@ -409,11 +470,11 @@ export default function App() {
     if (!rawSrc) return;
     setPhotoState("loading");
     try {
-      const blob = await compressAndCrop(rawSrc, selectedAspect, 1200);
+      const blob = await compressAndCrop(rawSrc, selectedAspect, 1200, rotation);
       const url = await uploadPhoto(blob, photoName);
       await supabaseInsert("photos", { url, name: photoName || "Anonymous", description: photoDesc, created_at: new Date().toISOString() });
       setPhotos(prev => [{ url, name: photoName || "Anonymous", description: photoDesc }, ...prev]);
-      setRawSrc(null); setPreviewSrc(null); setPhotoName(""); setPhotoDesc(""); setSelectedAspect(null);
+      setRawSrc(null); setPreviewSrc(null); setPhotoName(""); setPhotoDesc(""); setSelectedAspect(null); setRotation(0);
       if (fileInputRef.current) fileInputRef.current.value = "";
       setPhotoState("success");
     } catch { setPhotoState("error"); }
@@ -428,6 +489,19 @@ export default function App() {
     a.href = 'data:text/tab-separated-values;charset=utf-8,' + encodeURIComponent(tsv);
     a.download = 'merv-song-requests.tsv';
     a.click();
+  };
+
+  const handleAdminRotate = async (photo, degrees) => {
+    setRotatingPhotoId(photo.id);
+    try {
+      const newUrl = await rotateStoragePhoto(photo.url, degrees);
+      await supabaseUpdate('photos', photo.id, { url: newUrl });
+      setAdminPhotos(prev => prev.map(p => p.id === photo.id ? { ...p, url: newUrl } : p));
+    } catch (e) {
+      alert('Rotation failed: ' + e.message);
+    } finally {
+      setRotatingPhotoId(null);
+    }
   };
 
   const checkPassword = () => {
@@ -519,9 +593,17 @@ export default function App() {
                 <div className="admin-photo-grid">
                   {adminPhotos.map((p,i)=>(
                     <div className="admin-photo-item" key={i}>
-                      <img src={p.url} alt={p.name} />
+                      <img src={p.url} alt={p.name} style={{opacity: rotatingPhotoId===p.id ? 0.4 : 1, transition:'opacity 0.2s'}} />
                       {p.description&&<div className="admin-photo-desc">{p.description}</div>}
-                      <a className="admin-photo-dl" href={p.url} download target="_blank" rel="noopener noreferrer">Download</a>
+                      <div style={{display:'flex',gap:'0.4rem',padding:'0.3rem 0.5rem',flexWrap:'wrap',alignItems:'center'}}>
+                        <button disabled={!!rotatingPhotoId} onClick={()=>handleAdminRotate(p, -90)} style={{flex:1,padding:'0.35rem 0.3rem',fontSize:'0.72rem',background:'#324e34',color:'white',border:'none',cursor:'pointer',borderRadius:'1px',opacity:rotatingPhotoId===p.id?0.5:1}}>
+                          {rotatingPhotoId===p.id ? '...' : '↺ Left'}
+                        </button>
+                        <button disabled={!!rotatingPhotoId} onClick={()=>handleAdminRotate(p, 90)} style={{flex:1,padding:'0.35rem 0.3rem',fontSize:'0.72rem',background:'#324e34',color:'white',border:'none',cursor:'pointer',borderRadius:'1px',opacity:rotatingPhotoId===p.id?0.5:1}}>
+                          {rotatingPhotoId===p.id ? '...' : '↻ Right'}
+                        </button>
+                        <a className="admin-photo-dl" href={p.url} download target="_blank" rel="noopener noreferrer" style={{flex:1,textAlign:'center'}}>Download</a>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -714,13 +796,18 @@ export default function App() {
                 ) : (
                   <div className="photo-preview-wrap">
                     <img src={previewSrc} className="photo-preview-img" alt="Preview" />
-                    <div style={{marginTop:'0.8rem',color:'#333',fontSize:'0.8rem',fontWeight:500}}>Choose crop ratio:</div>
+                    <div style={{marginTop:'0.8rem',display:'flex',alignItems:'center',gap:'0.5rem',flexWrap:'wrap'}}>
+                      <div style={{color:'#333',fontSize:'0.8rem',fontWeight:500}}>Rotate:</div>
+                      <button className="aspect-btn" onClick={()=>handleRotate(-90)} title="Rotate left">↺ Left</button>
+                      <button className="aspect-btn" onClick={()=>handleRotate(90)} title="Rotate right">↻ Right</button>
+                    </div>
+                    <div style={{marginTop:'0.6rem',color:'#333',fontSize:'0.8rem',fontWeight:500}}>Choose crop ratio:</div>
                     <div className="aspect-btns">
                       {ASPECT_OPTIONS.map(opt=>(
                         <button key={String(opt.value)} className={`aspect-btn ${selectedAspect===opt.value?'active':''}`} onClick={()=>handleAspectChange(opt.value)}>{opt.label}</button>
                       ))}
                     </div>
-                    <button style={{background:'none',border:'none',color:'#888',fontSize:'0.78rem',cursor:'pointer',padding:'0.2rem 0',textDecoration:'underline'}} onClick={()=>{setRawSrc(null);setPreviewSrc(null);setSelectedAspect(null);if(fileInputRef.current)fileInputRef.current.value="";}}>Choose a different photo</button>
+                    <button style={{background:'none',border:'none',color:'#888',fontSize:'0.78rem',cursor:'pointer',padding:'0.2rem 0',textDecoration:'underline'}} onClick={()=>{setRawSrc(null);setPreviewSrc(null);setSelectedAspect(null);setRotation(0);if(fileInputRef.current)fileInputRef.current.value="";}}>Choose a different photo</button>
                   </div>
                 )}
 
