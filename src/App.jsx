@@ -48,11 +48,14 @@ async function uploadPhoto(blob, name) {
   return `${SUPABASE_URL}/storage/v1/object/public/photos/${fileName}`;
 }
 
-function rotateStoragePhoto(photoUrl, degrees) {
+async function rotateStoragePhoto(photoUrl, degrees) {
+  const res = await fetch(photoUrl);
+  if (!res.ok) throw new Error("Failed to fetch image");
+  const blob = await res.blob();
+  const objectUrl = URL.createObjectURL(blob);
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onerror = () => reject(new Error("Failed to load image"));
+    img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error("Failed to load image")); };
     img.onload = () => {
       const rotated90 = degrees === 90 || degrees === 270;
       const cw = rotated90 ? img.height : img.width;
@@ -64,12 +67,13 @@ function rotateStoragePhoto(photoUrl, degrees) {
       ctx.translate(cw / 2, ch / 2);
       ctx.rotate((degrees * Math.PI) / 180);
       ctx.drawImage(img, -img.width / 2, -img.height / 2);
+      URL.revokeObjectURL(objectUrl);
       canvas.toBlob(async (blob) => {
         try { resolve(await uploadPhoto(blob, '')); }
         catch (e) { reject(e); }
       }, 'image/jpeg', 0.82);
     };
-    img.src = photoUrl;
+    img.src = objectUrl;
   });
 }
 
