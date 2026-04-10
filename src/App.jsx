@@ -508,6 +508,22 @@ export default function App() {
     }
   };
 
+  const handleDownload = async (photo) => {
+    try {
+      const res = await fetch(photo.url);
+      const blob = await res.blob();
+      const ext = blob.type.split('/')[1] || 'jpg';
+      const filename = `merv-photo-${photo.id || Date.now()}.${ext}`;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch (e) {
+      alert('Download failed: ' + e.message);
+    }
+  };
+
   const checkPassword = () => {
     if (adminPass === ADMIN_PASSWORD) setAdminAuth(true);
     else alert('Incorrect password');
@@ -597,7 +613,9 @@ export default function App() {
                 <div className="admin-photo-grid">
                   {adminPhotos.map((p,i)=>(
                     <div className="admin-photo-item" key={i}>
-                      <img src={p.url} alt={p.name} style={{opacity: rotatingPhotoId===p.id ? 0.4 : 1, transition:'opacity 0.2s'}} />
+                      <a href={p.url} target="_blank" rel="noopener noreferrer">
+                        <img src={p.url} alt={p.name} style={{opacity: rotatingPhotoId===p.id ? 0.4 : 1, transition:'opacity 0.2s', display:'block', width:'100%'}} />
+                      </a>
                       {p.description&&<div className="admin-photo-desc">{p.description}</div>}
                       <div style={{display:'flex',gap:'0.4rem',padding:'0.3rem 0.5rem',flexWrap:'wrap',alignItems:'center'}}>
                         <button disabled={!!rotatingPhotoId} onClick={()=>handleAdminRotate(p, -90)} style={{flex:1,padding:'0.35rem 0.3rem',fontSize:'0.72rem',background:'#324e34',color:'white',border:'none',cursor:'pointer',borderRadius:'1px',opacity:rotatingPhotoId===p.id?0.5:1}}>
@@ -606,7 +624,7 @@ export default function App() {
                         <button disabled={!!rotatingPhotoId} onClick={()=>handleAdminRotate(p, 90)} style={{flex:1,padding:'0.35rem 0.3rem',fontSize:'0.72rem',background:'#324e34',color:'white',border:'none',cursor:'pointer',borderRadius:'1px',opacity:rotatingPhotoId===p.id?0.5:1}}>
                           {rotatingPhotoId===p.id ? '...' : '↻ Right'}
                         </button>
-                        <a className="admin-photo-dl" href={p.url} download target="_blank" rel="noopener noreferrer" style={{flex:1,textAlign:'center'}}>Download</a>
+                        <button className="admin-photo-dl" onClick={()=>handleDownload(p)} style={{flex:1,textAlign:'center',padding:'0.35rem 0.3rem',fontSize:'0.72rem',background:'transparent',border:'1px solid #ccc',cursor:'pointer',borderRadius:'1px'}}>Download</button>
                       </div>
                     </div>
                   ))}
