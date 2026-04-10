@@ -624,7 +624,7 @@ export default function App() {
                         <button disabled={!!rotatingPhotoId} onClick={()=>handleAdminRotate(p, 90)} style={{flex:1,padding:'0.35rem 0.3rem',fontSize:'0.72rem',background:'#324e34',color:'white',border:'none',cursor:'pointer',borderRadius:'1px',opacity:rotatingPhotoId===p.id?0.5:1}}>
                           {rotatingPhotoId===p.id ? '...' : '↻ Right'}
                         </button>
-                        <button className="admin-photo-dl" onClick={()=>handleDownload(p)} style={{flex:1,textAlign:'center',padding:'0.35rem 0.3rem',fontSize:'0.72rem',background:'transparent',border:'1px solid #ccc',cursor:'pointer',borderRadius:'1px'}}>Download</button>
+                        <button className="admin-photo-dl" onClick={()=>handleDownload(p)} style={{flex:1,cursor:'pointer',border:'none'}}>Download</button>
                       </div>
                     </div>
                   ))}
