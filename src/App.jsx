@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 const SUPABASE_URL = "https://eopwxchguerhvlpevbxo.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcHd4Y2hndWVyaHZscGV2YnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwOTkzNjQsImV4cCI6MjA4OTY3NTM2NH0.JcaFxQALMiJymMrWBclr8bVLU8_uS9dph8j_GAZ6yps";
 const ADMIN_PASSWORD = "mervorocks";
+const GOOGLE_CLIENT_ID = "1011701024113-07sngo8v0gsj9jdldej0ibrqnps4f4an.apps.googleusercontent.com";
 const DEVON_DRIVE_LINK = "https://drive.google.com/drive/u/1/folders/1mhP-GejBwU1b_qCMt-AEbO5Kgyn8H8ZS";
 
 async function supabaseUpdate(table, id, data) {
@@ -383,6 +384,7 @@ export default function App() {
   const [adminPhotos, setAdminPhotos] = useState([]);
   const [adminTab, setAdminTab] = useState(null);
   const [rotatingPhotoId, setRotatingPhotoId] = useState(null);
+  const [driveProgress, setDriveProgress] = useState(null);
 
   useEffect(() => {
     return () => {
@@ -406,6 +408,10 @@ export default function App() {
 
   useEffect(() => {
     if (!adminAuth) return;
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    document.body.appendChild(script);
     fetch(`${SUPABASE_URL}/rest/v1/memories?select=*&order=created_at.desc`, { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }).then(r => r.json()).then(data => { if (Array.isArray(data)) setAdminMemories(data); });
     fetch(`${SUPABASE_URL}/rest/v1/song_requests?select=*&order=created_at.desc`, { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }).then(r => r.json()).then(data => { if (Array.isArray(data)) setAdminSongs(data); });
     fetch(`${SUPABASE_URL}/rest/v1/photos?select=*&order=created_at.desc`, { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }).then(r => r.json()).then(data => { if (Array.isArray(data)) setAdminPhotos(data); });
@@ -508,6 +514,51 @@ export default function App() {
     }
   };
 
+  const handleDownloadAllToDrive = () => {
+    if (!window.google) { alert('Google sign-in not loaded yet, try again in a moment.'); return; }
+    const tokenClient = window.google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      callback: async (tokenResponse) => {
+        if (tokenResponse.error) { alert('Sign-in failed: ' + tokenResponse.error); return; }
+        const token = tokenResponse.access_token;
+        try {
+          setDriveProgress({ done: 0, total: adminPhotos.length, status: 'Creating folder...' });
+          const folderRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: 'Merv Photos', mimeType: 'application/vnd.google-apps.folder' })
+          });
+          const folder = await folderRes.json();
+          const folderId = folder.id;
+          for (let i = 0; i < adminPhotos.length; i++) {
+            const p = adminPhotos[i];
+            setDriveProgress({ done: i, total: adminPhotos.length, status: `Uploading ${i + 1} of ${adminPhotos.length}…` });
+            const res = await fetch(p.url);
+            const blob = await res.blob();
+            const ext = blob.type.split('/')[1] || 'jpg';
+            const filename = `${(p.name || 'photo').replace(/[^a-z0-9]/gi, '-')}-${p.id || i}.${ext}`;
+            const metadata = { name: filename, parents: [folderId] };
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('file', blob);
+            await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${token}` },
+              body: form
+            });
+          }
+          setDriveProgress({ done: adminPhotos.length, total: adminPhotos.length, status: `Done! ${adminPhotos.length} photos saved.` });
+          setTimeout(() => setDriveProgress(null), 4000);
+        } catch (e) {
+          alert('Drive upload failed: ' + e.message);
+          setDriveProgress(null);
+        }
+      }
+    });
+    tokenClient.requestAccessToken();
+  };
+
   const handleDownload = async (photo) => {
     try {
       const res = await fetch(photo.url);
@@ -607,7 +658,12 @@ export default function App() {
 
           {adminTab==='photos' && (
             <div className="admin-panel">
-              <div className="admin-panel-header"><div className="admin-panel-title">Photos</div></div>
+              <div className="admin-panel-header">
+                <div className="admin-panel-title">Photos</div>
+                <button className="btn" onClick={handleDownloadAllToDrive} disabled={!!driveProgress} style={{padding:'0.55rem 1.1rem',fontSize:'0.65rem'}}>
+                  {driveProgress ? driveProgress.status : 'Save All to Drive'}
+                </button>
+              </div>
               <div className="admin-panel-body">
                 {adminPhotos.length===0 && <div className="admin-empty">No photos yet.</div>}
                 <div className="admin-photo-grid">
