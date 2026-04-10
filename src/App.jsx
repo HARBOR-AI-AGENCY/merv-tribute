@@ -385,6 +385,7 @@ export default function App() {
   const [adminTab, setAdminTab] = useState(null);
   const [rotatingPhotoId, setRotatingPhotoId] = useState(null);
   const [driveProgress, setDriveProgress] = useState(null);
+  const [driveTextProgress, setDriveTextProgress] = useState(null);
 
   useEffect(() => {
     return () => {
@@ -514,6 +515,59 @@ export default function App() {
     }
   };
 
+  const uploadTextToDrive = (filename, content) => {
+    if (!window.google) { alert('Google sign-in not loaded yet, try again.'); return; }
+    const tokenClient = window.google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      callback: async (tokenResponse) => {
+        if (tokenResponse.error) { alert('Sign-in failed: ' + tokenResponse.error); return; }
+        const token = tokenResponse.access_token;
+        try {
+          setDriveTextProgress('Uploading…');
+          const folderRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: 'Merv Tribute', mimeType: 'application/vnd.google-apps.folder' })
+          });
+          const folder = await folderRes.json();
+          const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+          const metadata = { name: filename, parents: [folder.id] };
+          const form = new FormData();
+          form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+          form.append('file', blob);
+          await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: form
+          });
+          setDriveTextProgress('Done!');
+          setTimeout(() => setDriveTextProgress(null), 3000);
+        } catch (e) {
+          alert('Drive upload failed: ' + e.message);
+          setDriveTextProgress(null);
+        }
+      }
+    });
+    tokenClient.requestAccessToken();
+  };
+
+  const handleMemoriesToDrive = () => {
+    const escape = val => `"${(val||'').replace(/"/g,'""')}"`;
+    const headers = ['Name','Relationship','Message','Date Submitted'];
+    const rows = adminMemories.map(m => [escape(m.name),escape(m.relationship),escape(m.message),escape(new Date(m.created_at).toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}))]);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    uploadTextToDrive('merv-memories.csv', csv);
+  };
+
+  const handleSongsToDrive = () => {
+    const escape = val => `"${(val||'').replace(/"/g,'""')}"`;
+    const headers = ['Song Title','Artist / Band','Why This Song','Submitted By','Date Submitted'];
+    const rows = adminSongs.map(s => [escape(s.song_title),escape(s.artist),escape(s.note),escape(s.submitted_by||'Anonymous'),escape(new Date(s.created_at).toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}))]);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    uploadTextToDrive('merv-songs.csv', csv);
+  };
+
   const handleDownloadAllToDrive = () => {
     if (!window.google) { alert('Google sign-in not loaded yet, try again in a moment.'); return; }
     const tokenClient = window.google.accounts.oauth2.initTokenClient({
@@ -624,7 +678,12 @@ export default function App() {
 
           {adminTab==='memories' && (
             <div className="admin-panel">
-              <div className="admin-panel-header"><div className="admin-panel-title">Memories</div></div>
+              <div className="admin-panel-header">
+                <div className="admin-panel-title">Memories</div>
+                <button className="btn" onClick={handleMemoriesToDrive} disabled={!!driveTextProgress} style={{padding:'0.55rem 1.1rem',fontSize:'0.65rem'}}>
+                  {driveTextProgress || 'Save to Drive'}
+                </button>
+              </div>
               <div className="admin-panel-body">
                 {adminMemories.length===0 && <div className="admin-empty">No memories yet.</div>}
                 {adminMemories.map((m,i)=>(
@@ -641,7 +700,12 @@ export default function App() {
             <div className="admin-panel">
               <div className="admin-panel-header">
                 <div className="admin-panel-title">Song Requests</div>
-                <button className="btn" onClick={downloadCSV} style={{padding:'0.55rem 1.1rem',fontSize:'0.65rem'}}>Download for Excel</button>
+                <div style={{display:'flex',gap:'0.5rem'}}>
+                  <button className="btn" onClick={downloadCSV} style={{padding:'0.55rem 1.1rem',fontSize:'0.65rem'}}>Download for Excel</button>
+                  <button className="btn" onClick={handleSongsToDrive} disabled={!!driveTextProgress} style={{padding:'0.55rem 1.1rem',fontSize:'0.65rem'}}>
+                    {driveTextProgress || 'Save to Drive'}
+                  </button>
+                </div>
               </div>
               <div className="admin-panel-body">
                 {adminSongs.length===0 && <div className="admin-empty">No song requests yet.</div>}
