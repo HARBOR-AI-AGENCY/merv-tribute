@@ -763,10 +763,14 @@ export default function App() {
       <nav className={`nav ${navVisible?"show":""}`}>
         <div className="nav-name">Mervyn Scoble</div>
         <div className="nav-links">
-          <a href="#about">About</a>
-          <a href="#art">Art</a>
-          <a href="#details">Event</a>
-          <a href="#contribute">Share</a>
+          {['about','art','details','contribute'].map(id => (
+            <a key={id} href={`#${id}`} onClick={e => {
+              e.preventDefault();
+              const el = document.getElementById(id);
+              if (!el) return;
+              el.parentElement?.scrollTo({ top: el.offsetTop, behavior: 'smooth' });
+            }}>{id==='contribute'?'Share':id.charAt(0).toUpperCase()+id.slice(1)}</a>
+          ))}
         </div>
       </nav>
 
@@ -789,7 +793,10 @@ export default function App() {
             </div>
             <a href="#contribute" className="hero-wall-link" onClick={e => {
               e.preventDefault();
-              document.getElementById('contribute')?.scrollIntoView({ behavior: 'smooth' });
+              const el = document.getElementById('contribute');
+              if (!el) return;
+              const scroller = el.parentElement;
+              scroller?.scrollTo({ top: el.offsetTop, behavior: 'smooth' });
             }}>
               Add to Merv's Wall <span className="hero-wall-link-arrow">&#8595;</span>
             </a>
